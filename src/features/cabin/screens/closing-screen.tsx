@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -53,7 +54,17 @@ function Figure({ label, value, delay }: { label: string; value: number | null; 
  * parti est une information au moins aussi importante que l'inverse : sans
  * elle, on ne sait pas, et on se méfie.
  */
+/** Ce qu'on laisse à quelqu'un pour lire deux chiffres et répondre, en secondes. */
+const RETOUR_AUTOMATIQUE_S = 25;
+
 export function ClosingScreen({ outcome, onFeedback, onDone }: ClosingScreenProps) {
+  // La cabine revient d'elle-même à l'accueil. Personne ne doit avoir à penser
+  // à fermer une séance : la suivante commence en s'asseyant.
+  useEffect(() => {
+    const id = window.setTimeout(onDone, RETOUR_AUTOMATIQUE_S * 1000);
+    return () => window.clearTimeout(id);
+  }, [onDone]);
+
   return (
     <section className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6">
       <CabinChrome position="bottom" />

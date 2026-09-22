@@ -26,11 +26,6 @@ L'application tourne sur <http://localhost:5173> avec des données simulées, sa
 | ---------- | ------------------------------------------------------------------------- |
 | `/`        | Le parcours complet de la cabine, du bonjour à la clôture                 |
 | `/medecin` | Le tableau de bord du médecin de bord                                     |
-| `/ecrans`  | Le catalogue : chaque écran et chaque cas limite, atteignable directement |
-
-`/ecrans` est fait pour la soutenance. On y atteint la caméra coupée, le réseau débranché, le
-capteur hors bornes ou le modèle local éteint sans avoir à dérouler une séance ni à débrancher
-quoi que ce soit.
 
 ---
 

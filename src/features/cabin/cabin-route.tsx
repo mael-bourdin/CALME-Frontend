@@ -7,13 +7,6 @@ import { ResultScreen } from './screens/result-screen';
 import { ExerciseScreen } from './screens/exercise-screen';
 import { ClosingScreen } from './screens/closing-screen';
 
-const SIGNAL_LABEL: Record<string, string> = {
-  face: 'caméra coupée',
-  voice: 'micro coupé',
-  hr: 'capteur cardiaque suspect',
-  eda: 'capteur de sudation suspect',
-};
-
 /**
  * Le parcours complet, piloté par la phase.
  *
@@ -23,14 +16,6 @@ const SIGNAL_LABEL: Record<string, string> = {
  */
 export function CabinRoute() {
   const session = useSession();
-  const reducedConfidence = (() => {
-    const off: string[] = [];
-    if (!session.consent.camera) off.push(SIGNAL_LABEL.face);
-    if (!session.consent.microphone) off.push(SIGNAL_LABEL.voice);
-    if (off.length === 0) return null;
-    return `Confiance réduite — ${off.join(', ')}. Je continue sur les capteurs de l’accoudoir.`;
-  })();
-
   const firstName = session.member?.displayName.split(' ')[0] ?? '';
 
   return (
@@ -59,7 +44,6 @@ export function CabinRoute() {
             consent={session.consent}
             onToggleConsent={(key) => void session.toggleConsent(key)}
             connection={session.connection}
-            reducedConfidence={reducedConfidence}
           />
         )}
 

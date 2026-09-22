@@ -8,8 +8,6 @@ import { TrendsScreen } from '@/features/dashboard/screens/trends-screen';
 import { SensorsScreen } from '@/features/dashboard/screens/sensors-screen';
 import { PowerScreen } from '@/features/dashboard/screens/power-screen';
 import { MemberScreen } from '@/features/dashboard/screens/member-screen';
-import { StatesGallery } from '@/features/states/states-gallery';
-import { StateView } from '@/features/states/state-view';
 
 /**
  * Deux surfaces, deux publics.
@@ -35,15 +33,11 @@ export const router = createBrowserRouter([
       { path: 'alertes', element: <AlertsScreen /> },
       { path: 'capteurs', element: <SensorsScreen /> },
       // Les agrégats sur trente jours ne figurent pas dans les maquettes : la
-      // route reste, le dock n'y mène plus, le catalogue y mène encore.
+      // route existe encore, le dock n'y mène pas.
       { path: 'tendances', element: <TrendsScreen /> },
       { path: 'energie', element: <PowerScreen /> },
       { path: 'membre/:crewId', element: <MemberScreen /> },
     ],
   },
-  // Le catalogue : chaque écran et chaque alternative, atteignables un par un
-  // pour la soutenance, sans avoir à dérouler une séance entière.
-  { path: '/ecrans', element: <StatesGallery /> },
-  { path: '/ecrans/:stateId', element: <StateView /> },
   { path: '*', element: <Navigate to="/" replace /> },
 ]);
