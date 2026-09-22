@@ -63,10 +63,7 @@ export function PowerScreen() {
 
       {power.data && (
         <>
-          <GlassPanel
-            density="thick"
-            className="grid grid-cols-2 gap-6 p-6 sm:p-8 lg:grid-cols-4"
-          >
+          <GlassPanel density="thick" className="grid grid-cols-2 gap-6 p-6 sm:p-8 lg:grid-cols-4">
             {MODES.map((mode) => {
               const watts = totalFor(mode);
               const tone = MODE_TONE[mode];
@@ -179,8 +176,18 @@ export function PowerScreen() {
                 {health.data && (
                   <ul className="space-y-3 text-sm">
                     {[
-                      { Icon: Database, label: 'Base de données', detail: health.data.database.detail, ok: health.data.database.ok },
-                      { Icon: Cpu, label: 'Modèle local', detail: health.data.model.detail, ok: health.data.model.ok },
+                      {
+                        Icon: Database,
+                        label: 'Base de données',
+                        detail: health.data.database.detail,
+                        ok: health.data.database.ok,
+                      },
+                      {
+                        Icon: Cpu,
+                        label: 'Modèle local',
+                        detail: health.data.model.detail,
+                        ok: health.data.model.ok,
+                      },
                       {
                         Icon: HeartPulse,
                         label: 'Capteurs biologiques',
@@ -208,7 +215,10 @@ export function PowerScreen() {
                           <span className="block font-mono text-xs text-ink-faint">{detail}</span>
                         </span>
                         <span
-                          className={cn('size-1.5 shrink-0 rounded-full', ok ? 'bg-calm' : 'bg-watch')}
+                          className={cn(
+                            'size-1.5 shrink-0 rounded-full',
+                            ok ? 'bg-calm' : 'bg-watch',
+                          )}
                           aria-hidden
                         />
                       </li>
@@ -220,7 +230,11 @@ export function PowerScreen() {
           </div>
 
           <GlassPanel density="thin" className="flex gap-4 px-5 py-4 sm:px-6">
-            <Info className="mt-0.5 size-4.5 shrink-0 text-ink-faint" strokeWidth={1.7} aria-hidden />
+            <Info
+              className="mt-0.5 size-4.5 shrink-0 text-ink-faint"
+              strokeWidth={1.7}
+              aria-hidden
+            />
             <p className="text-sm text-ink-soft">
               La cabine coûte {power.data.dailyCostWh} Wh par jour et ferait économiser{' '}
               {power.data.dailySavingWh} Wh, soit un bilan positif d’environ{' '}

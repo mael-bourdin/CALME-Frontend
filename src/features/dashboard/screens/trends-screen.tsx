@@ -79,11 +79,15 @@ export function TrendsScreen() {
           </GlassPanel>
 
           <GlassPanel density="thin" className="flex gap-4 px-5 py-4 sm:px-6">
-            <Eye className="mt-0.5 size-4.5 shrink-0 text-ink-faint" strokeWidth={1.7} aria-hidden />
+            <Eye
+              className="mt-0.5 size-4.5 shrink-0 text-ink-faint"
+              strokeWidth={1.7}
+              aria-hidden
+            />
             <p className="text-sm text-ink-soft">
               Ces courbes sont agrégées et anonymes. Un module de planification des quarts peut les
-              consommer, à condition qu’un humain prenne la décision. L’indice de charge n’est jamais
-              présenté au commandant sous forme nominative.
+              consommer, à condition qu’un humain prenne la décision. L’indice de charge n’est
+              jamais présenté au commandant sous forme nominative.
             </p>
           </GlassPanel>
         </>
