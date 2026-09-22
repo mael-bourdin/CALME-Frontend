@@ -61,6 +61,7 @@ toucher à aucun composant.
 
 ```
 GET  /cabins/{id}/occupant            l'occupante courante
+GET  /cabins/{id}/sensors             les quatre capteurs et leur dernière fenêtre
 GET  /crew/{id}/last-session          date de la dernière séance
 POST /sessions                        ouvre une séance
 GET  /sessions/{id}                   état courant

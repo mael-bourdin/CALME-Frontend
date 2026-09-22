@@ -197,6 +197,28 @@ export interface PowerState {
   dailySavingWh: number;
 }
 
+/**
+ * L'état d'un capteur de la cabine, pour l'écran des capteurs.
+ *
+ * Le modèle et la fréquence sont affichés parce qu'ils rendent le relevé
+ * discutable : « 214 bpm » ne veut rien dire sans savoir que le MAX30102
+ * échantillonne à 100 Hz et que 30–220 sont ses bornes plausibles.
+ */
+export interface SensorHealth {
+  key: SignalKey;
+  label: string;
+  /** Référence du composant, telle qu'elle est gravée dessus. */
+  model: string;
+  sampleRate: string;
+  value: number | null;
+  unit: string;
+  /** Les trente dernières valeurs, pour la courbe. */
+  window: number[];
+  level: Exclude<Level, 'unreliable'> | 'unreliable';
+  /** Dit pourquoi le signal n'est pas exploitable, quand il ne l'est pas. */
+  note: string | null;
+}
+
 export interface HealthState {
   database: { ok: boolean; detail: string };
   model: { ok: boolean; detail: string; name: string | null };

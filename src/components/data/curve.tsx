@@ -102,7 +102,10 @@ export function Curve({
       )}
 
       {line && (
-        <motion.path
+        // Le tracé s'anime en CSS : c'est la donnée même de la courbe, elle ne
+        // doit pas pouvoir rester invisible parce qu'une animation n'a pas
+        // démarré. Sans animation, le trait est simplement là.
+        <path
           d={line}
           fill="none"
           stroke={color}
@@ -110,9 +113,8 @@ export function Curve({
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
-          initial={animate ? { pathLength: 0, opacity: 0 } : false}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 1.1, ease: [0.22, 0.61, 0.36, 1] }}
+          pathLength={1}
+          className={animate ? 'animate-[draw_1.1s_cubic-bezier(0.22,0.61,0.36,1)_both]' : undefined}
         />
       )}
 

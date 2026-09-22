@@ -50,10 +50,12 @@ export function MemberScreen() {
         <Lock className="size-4 shrink-0 text-alert" strokeWidth={1.7} aria-hidden />
         <p className="min-w-0 flex-1 text-sm">
           {accessGrant.reason === 'alert-acknowledged'
-            ? `Accès ouvert par une alerte acquittée par ${accessGrant.acknowledgedBy}.`
-            : 'Accès ouvert avec l’accord explicite de la personne.'}
+            ? `Accès ouvert par l’alerte du ${accessGrant.grantedAt}, acquittée par ${accessGrant.acknowledgedBy}.`
+            : `Accès ouvert le ${accessGrant.grantedAt} avec l’accord explicite de la personne.`}
         </p>
-        <p className="font-mono text-xs text-ink-faint">{accessGrant.grantedAt}</p>
+        {/* La règle est écrite à côté de l'exception, pas dans une politique
+            que personne n'ouvre : c'est ici qu'on est en train d'en profiter. */}
+        <p className="text-sm text-ink-faint">Hors alerte, il faut l’accord de la personne.</p>
       </GlassPanel>
 
       <GlassPanel density="thick" className="flex flex-wrap items-center gap-5 p-6 sm:p-7">

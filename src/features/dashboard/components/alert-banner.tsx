@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
 import { GlassPanel } from '@/components/ui/glass-panel';
 import { cn } from '@/lib/cn';
 import type { Alert } from '@/api';
@@ -31,11 +30,9 @@ export function AlertBanner({ alert, onAcknowledge, className }: AlertBannerProp
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-    >
+    // Apparition en CSS : une alerte est la dernière chose qui a le droit de
+    // rester invisible parce qu'une animation n'a pas démarré.
+    <div className="animate-[fade-in_0.45s_cubic-bezier(0.16,1,0.3,1)_both]">
       <GlassPanel
         density="thick"
         className={cn(
@@ -71,6 +68,6 @@ export function AlertBanner({ alert, onAcknowledge, className }: AlertBannerProp
           </button>
         )}
       </GlassPanel>
-    </motion.div>
+    </div>
   );
 }

@@ -1,5 +1,4 @@
-import type { ReactNode } from 'react';
-import { motion } from 'motion/react';
+import type { CSSProperties, ReactNode } from 'react';
 import { arcPath } from '@/lib/curve';
 import { cn } from '@/lib/cn';
 
@@ -50,16 +49,19 @@ export function Dial({
           strokeWidth={7}
           strokeLinecap="round"
         />
-        <motion.path
+        {/* L'arc s'anime en CSS, en partant de `--dial-from` : c'est la valeur
+            du cadran, elle ne doit pas pouvoir rester à zéro parce qu'une
+            animation n'a pas démarré. Sans animation, l'arc est déjà juste. */}
+        <path
           d={arcPath(size / 2, size / 2, r, START, START + SWEEP)}
           fill="none"
           stroke={color}
           strokeWidth={7}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: circumference * (1 - ratio) }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          strokeDashoffset={circumference * (1 - ratio)}
+          className="animate-[dial_0.9s_cubic-bezier(0.16,1,0.3,1)_backwards]"
+          style={{ '--dial-from': circumference } as CSSProperties}
         />
       </svg>
       <div className="relative z-10 text-center">{children}</div>
