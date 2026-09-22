@@ -158,7 +158,8 @@ function buildRecommendation(assessment: Assessment): Recommendation {
     id: `reco-${assessment.id}`,
     assessmentId: assessment.id,
     exercise,
-    message: source === 'rules' ? FALLBACK_MESSAGES[assessment.level] : MODEL_MESSAGES[assessment.level],
+    message:
+      source === 'rules' ? FALLBACK_MESSAGES[assessment.level] : MODEL_MESSAGES[assessment.level],
     source,
     modelName: source === 'model' ? 'llama-3b-instruct' : null,
   };
@@ -192,9 +193,12 @@ function createMockStream(sessionId: string): SessionStream {
     const suspectHr = state.suspect.has('hr');
     return {
       at: new Date().toISOString(),
-      heartRate: suspectHr ? 214 : Math.round(68 + Math.sin(elapsed / 4) * 3 + (random() - 0.5) * 2),
+      heartRate: suspectHr
+        ? 214
+        : Math.round(68 + Math.sin(elapsed / 4) * 3 + (random() - 0.5) * 2),
       skinConductance: Math.round((4.4 + Math.sin(elapsed / 7) * 0.6 + random() * 0.3) * 10) / 10,
-      faceTension: state.consent.camera && state.mode !== 'degraded' ? 0.28 + random() * 0.08 : null,
+      faceTension:
+        state.consent.camera && state.mode !== 'degraded' ? 0.28 + random() * 0.08 : null,
       voiceIndex: state.consent.microphone ? 0.4 + random() * 0.1 : null,
       suspect: [...state.suspect],
     };
@@ -207,7 +211,10 @@ function createMockStream(sessionId: string): SessionStream {
     emit({ type: 'frame', payload: frame() });
     emit({
       type: 'progress',
-      payload: { elapsedSeconds: Math.min(elapsed, MEASURE_SECONDS), totalSeconds: MEASURE_SECONDS },
+      payload: {
+        elapsedSeconds: Math.min(elapsed, MEASURE_SECONDS),
+        totalSeconds: MEASURE_SECONDS,
+      },
     });
 
     // Les indicateurs sont recalculés toutes les cinq secondes sur une fenêtre

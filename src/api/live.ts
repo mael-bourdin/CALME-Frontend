@@ -30,9 +30,7 @@ export const liveTransport: Transport = {
   },
 
   async getLastSessionAt(crewId) {
-    const result = await request<{ lastSessionAt: string | null }>(
-      `/crew/${crewId}/last-session`,
-    );
+    const result = await request<{ lastSessionAt: string | null }>(`/crew/${crewId}/last-session`);
     return result.lastSessionAt;
   },
 
