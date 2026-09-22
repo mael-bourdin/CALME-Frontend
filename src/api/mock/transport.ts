@@ -289,7 +289,7 @@ export const mockTransport: Transport = {
   },
 
   getLastSessionAt() {
-    return delay('il y a deux jours');
+    return delay('deux jours');
   },
 
   openSession(crewId) {

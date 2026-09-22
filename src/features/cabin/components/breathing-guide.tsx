@@ -1,34 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'motion/react';
 import { AIPresence } from '@/components/ai/presence';
-import { cn } from '@/lib/cn';
 
 interface Step {
   label: string;
   seconds: number;
-  /** Échelle visée de la sphère à la fin de l'étape. */
-  scale: number;
 }
 
-/**
- * Les rythmes du catalogue. Trois motifs suffisent à couvrir les exercices
- * respiratoires : seuls les décomptes changent.
- */
 const PATTERNS: Record<string, Step[]> = {
   'coherence-365': [
-    { label: 'Inspire', seconds: 5, scale: 1 },
-    { label: 'Expire', seconds: 5, scale: 0.58 },
+    { label: 'Inspire', seconds: 5 },
+    { label: 'Expire', seconds: 5 },
   ],
   carre: [
-    { label: 'Inspire', seconds: 4, scale: 1 },
-    { label: 'Retiens', seconds: 4, scale: 0.94 },
-    { label: 'Expire', seconds: 4, scale: 0.58 },
-    { label: 'Retiens', seconds: 4, scale: 0.62 },
+    { label: 'Inspire', seconds: 4 },
+    { label: 'Retiens', seconds: 4 },
+    { label: 'Expire', seconds: 4 },
+    { label: 'Retiens', seconds: 4 },
   ],
   'respiration-478': [
-    { label: 'Inspire', seconds: 4, scale: 1 },
-    { label: 'Retiens', seconds: 7, scale: 0.92 },
-    { label: 'Expire', seconds: 8, scale: 0.55 },
+    { label: 'Inspire', seconds: 4 },
+    { label: 'Retiens', seconds: 7 },
+    { label: 'Expire', seconds: 8 },
   ],
 };
 
@@ -42,95 +34,139 @@ interface BreathingGuideProps {
 }
 
 /**
- * Le guide respiratoire, c'est la sphère elle-même.
+ * Le guide respiratoire : un carré dont le contour se parcourt.
  *
- * Les points s'écartent à l'inspiration et se resserrent à l'expiration ;
- * l'anneau pointillé reste fixe et sert de repère. Rien d'autre à l'écran :
- * une seule chose est active à la fois, et quelqu'un de fatigué ne doit pas
- * avoir à choisir où regarder. La sphère reste sobre — pendant l'exercice l'IA
- * ne parle pas, elle accompagne.
+ * Le trait part du coin haut droit et tourne dans le sens des aiguilles. Sur la
+ * respiration carrée, chaque côté vaut exactement une phase — le dessin n'est
+ * pas une métaphore du rythme, il est le rythme. Sur les autres motifs, les
+ * côtés ne tombent plus juste, et c'est sans importance : ce qu'on suit est le
+ * mot au centre, le contour ne fait que dire où on en est du cycle.
+ *
+ * Pendant l'exercice, l'IA est en `idle` : elle accompagne, elle ne parle pas.
  */
 export function BreathingGuide({
   exerciseId,
   durationMinutes,
   onComplete,
-  size = 380,
+  size = 520,
 }: BreathingGuideProps) {
   const pattern = useMemo(() => PATTERNS[exerciseId] ?? DEFAULT_PATTERN, [exerciseId]);
-  const [stepIndex, setStepIndex] = useState(0);
-  const [remainingInStep, setRemainingInStep] = useState(pattern[0].seconds);
-  const [remainingTotal, setRemainingTotal] = useState(durationMinutes * 60);
-  const completed = useRef(false);
+  const cycleSeconds = useMemo(
+    () => pattern.reduce((total, step) => total + step.seconds, 0),
+    [pattern],
+  );
 
-  const step = pattern[stepIndex % pattern.length];
+  const [elapsed, setElapsed] = useState(0);
+  const finished = useRef(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRemainingTotal((total) => {
-        const next = total - 1;
-        if (next <= 0 && !completed.current) {
-          completed.current = true;
-          onComplete();
-        }
-        return Math.max(0, next);
-      });
+    const start = performance.now();
+    const id = window.setInterval(() => {
+      setElapsed((performance.now() - start) / 1000);
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [exerciseId]);
 
-      setRemainingInStep((left) => {
-        if (left > 1) return left - 1;
-        setStepIndex((index) => index + 1);
-        const nextStep = pattern[(stepIndex + 1) % pattern.length];
-        return nextStep.seconds;
-      });
-    }, 1000);
+  const totalSeconds = durationMinutes * 60;
 
-    return () => clearInterval(interval);
-  }, [pattern, stepIndex, onComplete]);
+  useEffect(() => {
+    if (!finished.current && elapsed >= totalSeconds) {
+      finished.current = true;
+      onComplete();
+    }
+  }, [elapsed, totalSeconds, onComplete]);
 
-  const minutes = Math.floor(remainingTotal / 60);
-  const seconds = remainingTotal % 60;
+  const inCycle = elapsed % cycleSeconds;
+  let consumed = 0;
+  let step = pattern[0];
+  for (const candidate of pattern) {
+    if (inCycle < consumed + candidate.seconds) {
+      step = candidate;
+      break;
+    }
+    consumed += candidate.seconds;
+  }
+  const countdown = Math.max(1, Math.ceil(consumed + step.seconds - inCycle));
+  const cycleRatio = inCycle / cycleSeconds;
+
+  const inset = 10;
+  const side = size - inset * 2;
+  const center = size / 2;
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="relative grid place-items-center" style={{ width: size, height: size }}>
-        {/* La cible : elle ne bouge jamais, c'est elle qui rend le mouvement lisible. */}
-        <div
-          className="absolute rounded-full border border-dashed border-quiet/45"
-          style={{ width: size * 0.94, height: size * 0.94 }}
-          aria-hidden
-        />
-        <motion.div
-          animate={{ scale: step.scale }}
-          transition={{ duration: step.seconds, ease: 'easeInOut' }}
-          className="grid place-items-center"
-        >
-          <AIPresence state="idle" size={Math.round(size * 0.82)} count={520} />
-        </motion.div>
-      </div>
+    <div className="relative grid place-items-center" style={{ width: size, height: size }}>
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        width={size}
+        height={size}
+        className="absolute inset-0"
+        role="img"
+        aria-label={`${step.label}, ${countdown} secondes`}
+      >
+        {/* Le rect démarre son tracé en haut à gauche ; la rotation d'un quart
+            de tour place le départ en haut à droite, comme sur la maquette. */}
+        <g transform={`rotate(90 ${center} ${center})`}>
+          <rect
+            x={inset}
+            y={inset}
+            width={side}
+            height={side}
+            rx={14}
+            fill="none"
+            stroke="var(--c-hairline)"
+            strokeWidth={20}
+            strokeLinejoin="round"
+            opacity={0.65}
+          />
+          <rect
+            x={inset}
+            y={inset}
+            width={side}
+            height={side}
+            rx={14}
+            fill="none"
+            stroke="var(--c-accent)"
+            strokeWidth={20}
+            strokeLinejoin="round"
+            pathLength={1}
+            strokeDasharray={`${cycleRatio} 1`}
+          />
+        </g>
+      </svg>
 
-      <div className="text-center">
-        <motion.p
-          key={`${step.label}-${stepIndex}`}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display text-4xl tracking-tight sm:text-5xl"
+      <div className="relative z-10 flex flex-col items-center">
+        <AIPresence state="idle" tint="accent" size={Math.round(size * 0.29)} count={340} />
+
+        {/* Le mot est la consigne : il ne passe pas par AnimatePresence, pour
+            qu'aucune animation interrompue ne puisse le laisser invisible. */}
+        <p
+          key={step.label}
+          className="mt-9 animate-[fade-in_0.35s_ease-out] font-display text-[2.125rem] leading-none tracking-tight"
         >
           {step.label}
-        </motion.p>
+        </p>
+
         <p
-          className={cn(
-            'font-display text-6xl leading-none text-accent sm:text-7xl',
-            'tabular mt-2',
-          )}
-          aria-live="polite"
+          className="mt-6 font-display text-[4.5rem] leading-none tabular text-accent"
+          aria-hidden
         >
-          {remainingInStep}
+          {countdown}
         </p>
       </div>
-
-      <p className="font-mono text-sm text-ink-faint">
-        {minutes}:{String(seconds).padStart(2, '0')} restantes
-      </p>
     </div>
   );
+}
+
+/** La part du temps total déjà écoulée, pour le filet du bas. */
+export function useExerciseProgress(durationMinutes: number): number {
+  const [ratio, setRatio] = useState(0);
+  useEffect(() => {
+    const start = performance.now();
+    const total = durationMinutes * 60_000;
+    const id = window.setInterval(() => {
+      setRatio(Math.min(1, (performance.now() - start) / total));
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [durationMinutes]);
+  return ratio;
 }

@@ -278,20 +278,24 @@ export function buildTrends(): AggregateTrends {
  * pas sa fonction, et il vaut mieux l'annoncer que faire semblant.
  */
 export const FALLBACK_MESSAGES: Record<Level, string> = {
-  green: "Ton indice est dans ta zone habituelle. Je te propose l'exercice prévu par les règles.",
-  amber:
-    "Le modèle local est coupé pour économiser l'énergie. Je te propose l'exercice prévu par les règles, sans l'adapter à tes séances précédentes.",
-  red: 'Ton indice a franchi le seuil. Le médecin de bord est prévenu. On commence par respirer.',
-  unreliable: "Je ne calcule pas d'indice : les mesures ne sont pas exploitables.",
+  green: 'Tout va bien. Je te propose l’exercice prévu par les règles.',
+  amber: 'Le modèle est coupé. Voici l’exercice prévu par les règles, sans adaptation.',
+  red: 'Tu as franchi le seuil. Le médecin de bord est prévenu. On respire.',
+  unreliable: 'Je ne calcule pas d’indice : les mesures ne sont pas exploitables.',
 };
 
 /** Les consignes rédigées par le modèle, quand il est disponible. */
+/**
+ * Les consignes sont courtes, comme sur les maquettes.
+ *
+ * Elles sont composées en Bodoni à cinquante pixels et occupent tout l'écran :
+ * au-delà de trois lignes, l'écran devient un paragraphe et ce qui devait se
+ * lire d'un coup d'œil se lit en s'appliquant. Le détail, quand il compte,
+ * arrive après — pas dans la phrase d'annonce.
+ */
 export const MODEL_MESSAGES: Record<Level, string> = {
-  green:
-    "Ton indice est à 28, c'est ta zone habituelle. Rien à signaler — huit minutes de journal vocal si tu veux poser ta journée.",
-  amber:
-    'Ta variabilité cardiaque est basse et ta conductance de peau est nettement au-dessus de ta normale. Cinq minutes de cohérence cardiaque.',
-  red: "Tu es au-dessus du seuil. J'ai prévenu le médecin de bord — il sait que tu l'as franchi, pas ce que tu as dit. On commence par respirer.",
-  unreliable:
-    "Une de tes mesures est sortie des bornes plausibles. Ce n'est pas une urgence, c'est un capteur à vérifier.",
+  green: 'Tout va bien. Ton indice est dans ta zone habituelle.',
+  amber: 'Ta sudation est au-dessus de ta normale. Cinq minutes de cohérence cardiaque.',
+  red: 'Tu respires beaucoup trop vite. On commence par un exercice court.',
+  unreliable: 'Une mesure est sortie des bornes. Ce n’est pas toi, c’est un capteur.',
 };

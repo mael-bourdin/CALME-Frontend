@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn';
  * cabine comme devant rester sombre, parce qu'il fait partie de l'environnement
  * de la séance. Le poste du médecin est consulté en lumière normale.
  */
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({ className, bare }: { className?: string; bare?: boolean }) {
   const { resolved, toggle } = useTheme();
   const nextLabel = resolved === 'dark' ? 'Passer en clair' : 'Passer en sombre';
 
@@ -19,8 +19,11 @@ export function ThemeToggle({ className }: { className?: string }) {
       title={nextLabel}
       aria-label={nextLabel}
       className={cn(
-        'glass glass-edge grid size-10 place-items-center rounded-full',
-        'text-ink-soft transition-colors duration-300 ease-calm hover:text-ink',
+        'grid size-10 place-items-center rounded-full',
+        // Dans la cabine la bascule n'a ni verre ni contour : les maquettes
+        // laissent ce coin vide et un bouton posé dessus s'y verrait trop.
+        bare ? 'text-ink-faint hover:text-ink-soft' : 'glass glass-edge text-ink-soft hover:text-ink',
+        'transition-colors duration-300 ease-calm',
         className,
       )}
     >

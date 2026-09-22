@@ -5,7 +5,7 @@ import { ThinkingScreen } from '@/features/cabin/screens/thinking-screen';
 import { ResultScreen } from '@/features/cabin/screens/result-screen';
 import { ExerciseScreen } from '@/features/cabin/screens/exercise-screen';
 import { ClosingScreen } from '@/features/cabin/screens/closing-screen';
-import { assessment, frame, history, outcome, recommendation } from './fixtures';
+import { assessment, frame, outcome, recommendation } from './fixtures';
 
 const noop = () => {};
 const consentOn = { camera: true, microphone: true };
@@ -66,7 +66,6 @@ export const STATES: StateEntry[] = [
       <ResultScreen
         assessment={assessment({ index: 28, level: 'green' })}
         recommendation={recommendation('green')}
-        history={history(34, 28)}
         onAccept={noop}
         onLater={noop}
       />
@@ -81,7 +80,6 @@ export const STATES: StateEntry[] = [
       <ResultScreen
         assessment={assessment({ index: 58, level: 'amber' })}
         recommendation={recommendation('amber')}
-        history={history(29, 58)}
         onAccept={noop}
         onLater={noop}
       />
@@ -96,7 +94,6 @@ export const STATES: StateEntry[] = [
       <ResultScreen
         assessment={assessment({ index: 74, level: 'red' })}
         recommendation={recommendation('red')}
-        history={history(44, 74)}
         onAccept={noop}
         onLater={noop}
       />
@@ -191,7 +188,6 @@ export const STATES: StateEntry[] = [
           missing: [{ signal: 'hr', reason: 'faulty' }],
         })}
         recommendation={null}
-        history={[]}
         onAccept={noop}
         onLater={noop}
       />
@@ -206,7 +202,6 @@ export const STATES: StateEntry[] = [
       <ResultScreen
         assessment={assessment({ index: 58, level: 'amber' })}
         recommendation={recommendation('amber', true)}
-        history={history(29, 58)}
         onAccept={noop}
         onLater={noop}
       />

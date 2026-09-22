@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Dock, type DockItem } from '@/components/ui/dock';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -26,7 +26,7 @@ export function DashboardLayout() {
   ];
 
   return (
-    <div className="relative min-h-dvh pb-32">
+    <div className="relative flex min-h-dvh flex-col pb-32">
       <div className="absolute right-5 top-5 z-30 sm:right-8 sm:top-8">
         <ThemeToggle />
       </div>
@@ -38,18 +38,24 @@ export function DashboardLayout() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-auto w-full max-w-5xl px-5 pt-8 sm:px-8 sm:pt-14"
+          // Centré verticalement : sur la maquette D1 le panneau flotte au
+          // milieu et le dock se pose dessous, au lieu de lui passer dessus.
+          className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-5 py-10 sm:px-8"
         >
           <Outlet />
-
-          <p className="mx-auto mt-10 max-w-xl text-balance text-center text-sm text-ink-faint">
-            Le tableau de bord ne montre que des tendances. Le détail d’une séance reste à
-            l’astronaute.
-          </p>
         </motion.main>
       </AnimatePresence>
 
       <Dock items={items} />
+
+      {/* Pas dans les maquettes, mais la soutenance a besoin d'un aller-retour
+          entre les deux surfaces. Assez discret pour ne pas peser. */}
+      <Link
+        to="/"
+        className="pointer-events-auto absolute bottom-6 left-6 text-xs text-ink-faint transition-colors hover:text-ink-soft"
+      >
+        Aller à la cabine
+      </Link>
     </div>
   );
 }
