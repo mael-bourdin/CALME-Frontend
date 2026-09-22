@@ -173,8 +173,10 @@ npm run build        # typecheck puis build de production
 npm run format       # prettier
 ```
 
-L'interface respecte `prefers-reduced-motion` : la boucle d'animation de la sphère s'arrête et
-rend une image fixe. Les cibles tactiles font au moins 44 px. Les courbes portent un
+L'interface respecte `prefers-reduced-motion`. C'est posé une fois pour toutes par un
+`MotionConfig reducedMotion="user"` à la racine plutôt que composant par composant : les
+déplacements sautent à leur état final, les fondus restent, et la boucle de la sphère s'arrête sur
+une image fixe. Personne ne perd d'information en coupant le mouvement. Les cibles tactiles font au moins 44 px. Les courbes portent un
 `aria-label` décrivant ce qu'elles montrent, et les réglettes sont des `role="meter"`.
 
 ---

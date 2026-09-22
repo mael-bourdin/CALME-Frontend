@@ -46,7 +46,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center rounded-pill font-medium',
+        'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-pill font-medium',
         'transition-all duration-300 ease-calm',
         'disabled:pointer-events-none disabled:opacity-45',
         VARIANT[variant],

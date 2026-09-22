@@ -139,11 +139,7 @@ export function ResultScreen({
                 disabled={!recommendation}
                 className="w-full sm:w-auto"
               >
-                {unreliable
-                  ? 'Reprendre la mesure'
-                  : recommendation
-                    ? `${recommendation.exercise.name} · ${recommendation.exercise.duration} min`
-                    : 'Commencer'}
+                {unreliable ? 'Reprendre la mesure' : 'Commencer'}
               </Button>
               <Button variant="ghost" size="lg" onClick={onLater} className="w-full sm:w-auto">
                 Plus tard
