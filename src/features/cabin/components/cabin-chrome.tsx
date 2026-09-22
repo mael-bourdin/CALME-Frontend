@@ -66,12 +66,16 @@ export function CabinFooter({
     <div
       className={cn(
         'pointer-events-none absolute inset-x-0 bottom-0 z-20',
-        'flex items-end justify-between gap-4 px-6 py-6 text-sm sm:px-10',
+        'flex flex-col items-start gap-1 px-6 py-6 text-sm',
+        'sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:px-10',
         className,
       )}
     >
+      {/* Les deux mentions ne tiennent pas côte à côte sous 640 px : elles s'empilent
+          plutôt que de se tronquer. Aucune des deux n'est décorative — l'une dit ce
+          qui n'est pas conservé, l'autre ce que la cabine consomme. */}
       <p className="text-ink-faint">{left}</p>
-      {right && <p className="font-mono text-xs text-ink-faint">{right}</p>}
+      {right && <p className="whitespace-nowrap font-mono text-xs text-ink-faint">{right}</p>}
     </div>
   );
 }
