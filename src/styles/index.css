@@ -192,51 +192,56 @@ body {
 /* --------------------------------------------------------------------------
    Verre
    -------------------------------------------------------------------------- */
-.glass {
-  position: relative;
-  background: var(--glass-regular);
-  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  border: 1px solid transparent;
-  background-clip: padding-box;
-  box-shadow: 0 10px 40px var(--glass-shadow);
-}
+/* Dans `components` et pas hors couche : une regle non layeree l'emporte sur
+   toutes les utilitaires de Tailwind, et `.glass { position: relative }`
+   ecrasait alors `absolute` sur tout ce qui portait du verre. */
+@layer components {
+  .glass {
+    position: relative;
+    background: var(--glass-regular);
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    box-shadow: 0 10px 40px var(--glass-shadow);
+  }
 
-.glass-thin {
-  background: var(--glass-thin);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-}
+  .glass-thin {
+    background: var(--glass-thin);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+  }
 
-.glass-thick {
-  background: var(--glass-thick);
-  backdrop-filter: blur(30px) saturate(190%);
-  -webkit-backdrop-filter: blur(30px) saturate(190%);
-}
+  .glass-thick {
+    background: var(--glass-thick);
+    backdrop-filter: blur(30px) saturate(190%);
+    -webkit-backdrop-filter: blur(30px) saturate(190%);
+  }
 
-/* L'arête lumineuse. Un simple border ne suffit pas : c'est le dégradé du
-   haut-gauche vers le bas-droite qui fait lire la surface comme du verre. */
-.glass-edge::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    135deg,
-    var(--glass-edge-high),
-    var(--glass-edge-low) 55%,
-    transparent
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
+  /* L'arête lumineuse. Un simple border ne suffit pas : c'est le dégradé du
+     haut-gauche vers le bas-droite qui fait lire la surface comme du verre. */
+  .glass-edge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      var(--glass-edge-high),
+      var(--glass-edge-low) 55%,
+      transparent
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -260,6 +265,17 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { Feedback } from '@/api';
+import type { SessionOutcome } from '@/api';
 import { cn } from '@/lib/cn';
-import type { Feedback, SessionOutcome } from '@/api';
-import { CabinChrome, CabinFooter } from '../components/cabin-chrome';
+import { CabinChrome } from '../components/cabin-chrome';
 
 interface ClosingScreenProps {
   outcome: SessionOutcome;
@@ -12,82 +12,112 @@ interface ClosingScreenProps {
   onDone: () => void;
 }
 
-function Figure({ label, value, tone }: { label: string; value: number | null; tone: string }) {
+/** Le palier d'un indice, pour teinter les deux chiffres de la clôture. */
+function toneFor(value: number | null): string {
+  if (value === null) return 'text-ink-faint';
+  if (value >= 70) return 'text-alert';
+  if (value >= 40) return 'text-watch';
+  return 'text-calm';
+}
+
+function Figure({ label, value, delay }: { label: string; value: number | null; delay: number }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-sm text-ink-faint">{label}</span>
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      className="flex flex-col items-center gap-2"
+    >
+      <span className="text-[0.9375rem] text-ink-faint">{label}</span>
       <span
-        className={cn('font-display text-[clamp(3.5rem,12vw,6rem)] leading-none tabular', tone)}
+        className={cn(
+          'font-display leading-none tabular text-[clamp(3.5rem,8vw,6rem)]',
+          toneFor(value),
+        )}
       >
         {value ?? '—'}
       </span>
-    </div>
+    </motion.div>
   );
 }
 
 /**
- * La clôture.
+ * La clôture, telle que la maquette C5 la pose.
  *
- * Deux chiffres, avant et après, et deux boutons. C'est la consigne du dossier,
- * et tout le reste serait du bruit : la personne veut voir ce qu'elle a gagné,
- * pas un tableau de bord.
+ * Deux chiffres et une flèche. C'est tout ce que le dossier demande de montrer
+ * à la fin, et c'est tout ce qui se retient : l'écart entre avant et après est
+ * la seule preuve que la séance a servi à quelque chose.
+ *
+ * La ligne sur l'alerte est là quoi qu'il arrive. Qu'aucun message ne soit
+ * parti est une information au moins aussi importante que l'inverse : sans
+ * elle, on ne sait pas, et on se méfie.
  */
 export function ClosingScreen({ outcome, onFeedback, onDone }: ClosingScreenProps) {
-  const [sent, setSent] = useState<Feedback | null>(null);
-
-  function answer(feedback: Feedback) {
-    setSent(feedback);
-    onFeedback(feedback);
-    setTimeout(onDone, 900);
-  }
-
   return (
     <section className="relative grid min-h-dvh place-items-center overflow-hidden px-6">
-      <CabinChrome />
+      <CabinChrome position="bottom" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col items-center gap-10 text-center"
-      >
-        <h1 className="font-display text-[clamp(1.9rem,6vw,2.75rem)] tracking-tight">
+      <div className="-mt-8 flex flex-col items-center text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="font-display text-[clamp(2rem,4vw,2.75rem)] leading-none tracking-tight"
+        >
           Séance terminée.
-        </h1>
+        </motion.h1>
 
-        <div className="flex items-center gap-6 sm:gap-10">
-          <Figure label="avant" value={outcome.indexBefore} tone="text-watch" />
-          <ArrowRight className="size-6 text-ink-faint" strokeWidth={1.5} aria-hidden />
-          <Figure label="après" value={outcome.indexAfter} tone="text-calm" />
+        <div className="mt-20 flex items-end gap-10 sm:gap-14">
+          <Figure label="avant" value={outcome.indexBefore} delay={0.2} />
+          <motion.span
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.45, duration: 0.5 }}
+            className="mb-6 text-ink-faint"
+            aria-hidden
+          >
+            <ArrowRight className="size-6" strokeWidth={1.5} />
+          </motion.span>
+          <Figure label="après" value={outcome.indexAfter} delay={0.35} />
         </div>
 
-        <p className="text-ink-faint">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7, duration: 0.6 }}
+          className="mt-16 text-[1.0625rem] text-ink-soft"
+        >
           {outcome.alertRaised
-            ? 'Le médecin de bord a été prévenu : il sait que tu as franchi le seuil, pas ce que tu as dit.'
+            ? 'Le médecin de bord sait que tu as franchi le seuil. Ni la mesure ni ce que tu as dit ne lui sont transmis.'
             : 'Personne n’a été prévenu.'}
-        </p>
+        </motion.p>
 
-        {sent ? (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-sm text-ink-soft"
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.85, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-11 flex items-center gap-3"
+        >
+          <Button
+            variant="secondary"
+            onClick={() => {
+              onFeedback('helped');
+              onDone();
+            }}
           >
-            C’est noté. À bientôt.
-          </motion.p>
-        ) : (
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button variant="secondary" onClick={() => answer('helped')}>
-              Ça a servi
-            </Button>
-            <Button variant="ghost" onClick={() => answer('not-really')}>
-              Pas vraiment
-            </Button>
-          </div>
-        )}
-      </motion.div>
-
-      <CabinFooter left="Ton historique n’est visible que par toi." right="11 W · veille" />
+            Ça a servi
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onFeedback('not-really');
+              onDone();
+            }}
+          >
+            Pas vraiment
+          </Button>
+        </motion.div>
+      </div>
     </section>
   );
 }

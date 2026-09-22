@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { api } from '@/api';
 import { useSession } from './session-context';
 import { HomeScreen } from './screens/home-screen';
 import { MeasureScreen } from './screens/measure-screen';
@@ -25,25 +23,6 @@ const SIGNAL_LABEL: Record<string, string> = {
  */
 export function CabinRoute() {
   const session = useSession();
-  const [history, setHistory] = useState<number[]>([]);
-
-  useEffect(() => {
-    if (session.phase !== 'result' || !session.member) return;
-    let cancelled = false;
-    void api
-      .getCrewHistory(session.member.id)
-      .then((result) => {
-        if (!cancelled) setHistory(result.points.map((point) => point.index));
-      })
-      .catch(() => {
-        // Sans historique, l'écran montre le chiffre sans sa courbe.
-        if (!cancelled) setHistory([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [session.phase, session.member]);
-
   const reducedConfidence = (() => {
     const off: string[] = [];
     if (!session.consent.camera) off.push(SIGNAL_LABEL.face);
@@ -90,7 +69,6 @@ export function CabinRoute() {
           <ResultScreen
             assessment={session.assessment}
             recommendation={session.recommendation}
-            history={history.length > 0 ? history : [session.assessment.index]}
             onAccept={session.acceptExercise}
             onLater={session.reset}
           />

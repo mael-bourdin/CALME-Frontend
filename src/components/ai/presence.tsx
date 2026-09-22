@@ -167,9 +167,17 @@ interface AIPresenceProps {
   className?: string;
   /** Nombre de points. Descendre sur les petites tailles. */
   count?: number;
+  /**
+   * Teinte la sphère selon le palier annoncé.
+   *
+   * C'est l'écran de résultat des maquettes : l'IA ne dit pas le niveau dans
+   * une étiquette à côté, elle le porte. Vert et orange gardent une part de
+   * bleu — ils annoncent une nuance. Le rouge est monochrome : il n'en a pas.
+   */
+  tint?: 'green' | 'amber' | 'red' | 'accent';
 }
 
-export function AIPresence({ state, size = 180, className, count }: AIPresenceProps) {
+export function AIPresence({ state, size = 180, className, count, tint }: AIPresenceProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { resolved } = useTheme();
   const particleCount = count ?? (size < 80 ? 120 : size < 140 ? 260 : 440);
@@ -192,7 +200,20 @@ export function AIPresence({ state, size = 180, className, count }: AIPresencePr
       accent: readVar('--c-accent'),
       alert: readVar('--c-alert'),
       unknown: readVar('--c-unknown'),
+      calm: readVar('--c-calm'),
+      watch: readVar('--c-watch'),
     };
+
+    const tintStops =
+      tint === 'green'
+        ? ([palette.calm, palette.accent] as const)
+        : tint === 'amber'
+          ? ([palette.watch, palette.accent] as const)
+          : tint === 'red'
+            ? ([palette.alert, palette.alert] as const)
+            : tint === 'accent'
+              ? ([palette.accent, palette.accent] as const)
+              : null;
 
     const all = buildParticles(particleCount);
     const particles = all.slice(0, Math.round(all.length * profile.density));
@@ -204,8 +225,13 @@ export function AIPresence({ state, size = 180, className, count }: AIPresencePr
     let frame = 0;
     const start = performance.now();
 
-    function colorFor(projectedX: number, depth: number): string {
+    function colorFor(projectedX: number, depth: number, mix: number): string {
       const alpha = 0.32 + 0.68 * ((depth + 1) / 2);
+      if (tintStops) {
+        // Mélangé point par point et non coupé en deux moitiés : une sphère
+        // bicolore séparée par une frontière nette se lit comme deux objets.
+        return hexToRgba(mix < 0.62 ? tintStops[0] : tintStops[1], alpha);
+      }
       if (profile.color === 'iris') {
         // Les points de gauche tirent vers le rose, ceux de droite vers le cyan.
         const t = (projectedX + 1) / 2;
@@ -242,8 +268,9 @@ export function AIPresence({ state, size = 180, className, count }: AIPresencePr
           center,
           size * 0.55,
         );
-        const haloColor =
-          profile.color === 'alert'
+        const haloColor = tintStops
+          ? tintStops[0]
+          : profile.color === 'alert'
             ? palette.alert
             : profile.color === 'iris'
               ? palette.iris[1]
@@ -266,7 +293,13 @@ export function AIPresence({ state, size = 180, className, count }: AIPresencePr
             particle.jitter *
             Math.sin(elapsed * 1.7 + particle.phase) *
             (reduceMotion ? 0.35 : 1);
-        return { x: x * wobble, y: particle.y * wobble, z, radius: particle.radius };
+        return {
+          x: x * wobble,
+          y: particle.y * wobble,
+          z,
+          radius: particle.radius,
+          mix: particle.phase / (Math.PI * 2),
+        };
       });
       projected.sort((a, b) => a.z - b.z);
 
@@ -284,7 +317,7 @@ export function AIPresence({ state, size = 180, className, count }: AIPresencePr
           0,
           Math.PI * 2,
         );
-        context!.fillStyle = colorFor(point.x, point.z);
+        context!.fillStyle = colorFor(point.x, point.z, point.mix);
         context!.fill();
       }
 
@@ -324,7 +357,7 @@ export function AIPresence({ state, size = 180, className, count }: AIPresencePr
 
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [state, size, particleCount, resolved]);
+  }, [state, size, particleCount, resolved, tint]);
 
   return (
     <canvas
