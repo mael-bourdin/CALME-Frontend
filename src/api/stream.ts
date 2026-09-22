@@ -38,7 +38,7 @@ export function createLiveStream(sessionId: string): SessionStream {
   function connect() {
     if (disposed) return;
     try {
-      socket = new WebSocket(`${WS_BASE_URL}/sessions/${sessionId}/stream`);
+      socket = new WebSocket(`${WS_BASE_URL}/sessions/${encodeURIComponent(sessionId)}/stream`);
     } catch {
       scheduleReconnect();
       return;

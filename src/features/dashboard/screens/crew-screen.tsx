@@ -50,7 +50,9 @@ function Row({ entry, index }: { entry: CrewSummary; index: number }) {
           {entry.meanIndex}
         </p>
 
-        <p className={cn('hidden items-center gap-1.5 font-mono text-xs sm:flex sm:w-20', tone.text)}>
+        <p
+          className={cn('hidden items-center gap-1.5 font-mono text-xs sm:flex sm:w-20', tone.text)}
+        >
           <TrendIcon delta={entry.delta} />
           {entry.delta > 0 ? `+${entry.delta}` : entry.delta}
         </p>
@@ -80,7 +82,9 @@ export function CrewScreen() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-4xl tracking-tight sm:text-5xl">Équipage</h1>
-          <p className="mt-1 text-ink-soft">Huit personnes à bord, indices moyens sur sept jours.</p>
+          <p className="mt-1 text-ink-soft">
+            Huit personnes à bord, indices moyens sur sept jours.
+          </p>
         </div>
       </header>
 
@@ -88,7 +92,7 @@ export function CrewScreen() {
         <AlertBanner
           alert={open}
           onAcknowledge={async () => {
-            await api.acknowledgeAlert(open.id, 'Dr. Benali');
+            await api.acknowledgeAlert(open.id);
             alerts.reload();
           }}
         />

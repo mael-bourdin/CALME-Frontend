@@ -66,7 +66,11 @@ export interface Transport {
   getCrewOverview(): Promise<CrewSummary[]>;
   getCrewHistory(crewId: string): Promise<CrewHistory>;
   getAlerts(): Promise<Alert[]>;
-  acknowledgeAlert(alertId: string, acknowledgedBy: string): Promise<Alert>;
+  /**
+   * Qui acquitte est déduit de la session authentifiée, côté serveur.
+   * Le client ne le dit pas : sinon la trace ne prouve rien.
+   */
+  acknowledgeAlert(alertId: string): Promise<Alert>;
   getTrends(): Promise<AggregateTrends>;
 
   /* ---- Énergie et santé système ------------------------------------------ */
