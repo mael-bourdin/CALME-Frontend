@@ -222,7 +222,12 @@ body {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, var(--glass-edge-high), var(--glass-edge-low) 55%, transparent);
+  background: linear-gradient(
+    135deg,
+    var(--glass-edge-high),
+    var(--glass-edge-low) 55%,
+    transparent
+  );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
