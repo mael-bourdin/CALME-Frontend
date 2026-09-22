@@ -9,6 +9,7 @@ import type {
   HealthState,
   PowerState,
   Recommendation,
+  SensorHealth,
   Session,
   SessionOutcome,
   SignalKey,
@@ -78,6 +79,9 @@ export interface Transport {
   /** La consigne de réduction vient du réseau du vaisseau. */
   setPowerSetpoint(percent: number): Promise<PowerState>;
   getHealth(): Promise<HealthState>;
+
+  /** Les quatre capteurs de la cabine, avec leur dernière fenêtre de mesure. */
+  getSensors(): Promise<SensorHealth[]>;
 
   /* ---- Simulations de démonstration -------------------------------------- */
   /** Injecte une valeur aberrante pour montrer que le système la rejette. */

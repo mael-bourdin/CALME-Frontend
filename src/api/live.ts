@@ -12,6 +12,7 @@ import type {
   HealthState,
   PowerState,
   Recommendation,
+  SensorHealth,
   Session,
   SessionOutcome,
 } from './types';
@@ -137,5 +138,9 @@ export const liveTransport: Transport = {
 
   getHealth() {
     return request<HealthState>('/health');
+  },
+
+  getSensors() {
+    return request<SensorHealth[]>(`/cabins/${segment(CABIN_ID)}/sensors`);
   },
 };

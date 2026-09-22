@@ -22,11 +22,11 @@ const MODE_CAPTION: Record<CabinMode, string> = {
   degraded: 'écran et caméra coupés',
 };
 
-const MODE_TONE: Record<CabinMode, { text: string; color: string }> = {
-  standby: { text: 'text-calm', color: 'var(--c-calm)' },
-  measuring: { text: 'text-calm', color: 'var(--c-calm)' },
-  session: { text: 'text-watch', color: 'var(--c-watch)' },
-  degraded: { text: 'text-alert', color: 'var(--c-alert)' },
+const MODE_TONE: Record<CabinMode, { text: string; color: string; dot: string }> = {
+  standby: { text: 'text-calm', color: 'var(--c-calm)', dot: 'bg-calm' },
+  measuring: { text: 'text-calm', color: 'var(--c-calm)', dot: 'bg-calm' },
+  session: { text: 'text-watch', color: 'var(--c-watch)', dot: 'bg-watch' },
+  degraded: { text: 'text-alert', color: 'var(--c-alert)', dot: 'bg-alert' },
 };
 
 const MODES: CabinMode[] = ['standby', 'measuring', 'session', 'degraded'];
@@ -52,13 +52,6 @@ export function PowerScreen() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-4xl tracking-tight sm:text-5xl">Énergie</h1>
-        <p className="mt-1 text-ink-soft">
-          Consommation mesurée par le capteur de courant, pas estimée.
-        </p>
-      </header>
-
       {power.loading && <p className="py-10 text-center text-ink-faint">Lecture du capteur…</p>}
 
       {power.data && (
@@ -83,9 +76,17 @@ export function PowerScreen() {
                     <span className="ml-1 font-mono text-sm text-ink-faint">W</span>
                   </Dial>
                   <div className="text-center">
-                    <p className={cn('font-medium', active && tone.text)}>
+                    {/* Le mode en cours se marque par une pastille, pas par un
+                        « · en cours » accolé au nom : la couleur du cadran le
+                        dit déjà, le texte n'a pas à le redire. */}
+                    <p className="flex items-center justify-center gap-2 font-medium">
                       {MODE_LABEL[mode]}
-                      {active && ' · en cours'}
+                      {active && (
+                        <span
+                          className={cn('size-1.5 rounded-full', tone.dot)}
+                          aria-label="mode en cours"
+                        />
+                      )}
                     </p>
                     <p className="text-balance text-sm text-ink-faint">{MODE_CAPTION[mode]}</p>
                   </div>
