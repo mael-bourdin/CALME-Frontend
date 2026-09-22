@@ -175,11 +175,48 @@ interface AIPresenceProps {
    * bleu — ils annoncent une nuance. Le rouge est monochrome : il n'en a pas.
    */
   tint?: 'green' | 'amber' | 'red' | 'accent';
+  /**
+   * Rend la sphère sensible au pointeur : elle grossit un peu au survol et
+   * répond au clic par une onde. Rien ne se passe d'autre — c'est un contact,
+   * pas une commande. Une présence à qui on parle doit accuser réception.
+   */
+  interactive?: boolean;
+  /**
+   * L'amplitude de la voix, de 0 à 1, pilotée de l'extérieur.
+   *
+   * La sphère enfle et s'agite au rythme de la phrase prononcée. C'est ce qui
+   * fait la différence entre une animation qui tourne et quelqu'un qui parle.
+   */
+  amplitude?: number;
+  /** Appelé au clic, quand `interactive`. */
+  onPoke?: () => void;
 }
 
-export function AIPresence({ state, size = 180, className, count, tint }: AIPresenceProps) {
+export function AIPresence({
+  state,
+  size = 180,
+  className,
+  count,
+  tint,
+  interactive,
+  amplitude,
+  onPoke,
+}: AIPresenceProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { resolved } = useTheme();
+
+  // Des refs et non des états : ces valeurs changent à chaque image, les
+  // relire dans la boucle évite de la redémarrer soixante fois par seconde.
+  const hoverRef = useRef(false);
+  const easedHoverRef = useRef(0);
+  const burstRef = useRef(0);
+  const amplitudeRef = useRef(0);
+  const easedAmpRef = useRef(0);
+  const driven = amplitude !== undefined;
+
+  useEffect(() => {
+    amplitudeRef.current = amplitude ?? 0;
+  }, [amplitude]);
   const particleCount = count ?? (size < 80 ? 120 : size < 140 ? 260 : 440);
 
   useEffect(() => {
@@ -256,7 +293,21 @@ export function AIPresence({ state, size = 180, className, count, tint }: AIPres
 
       const [breathAmp, breathPeriod] = profile.breath;
       const breath = 1 + Math.sin((elapsed / breathPeriod) * Math.PI * 2) * breathAmp;
-      const radius = baseRadius * profile.scale * breath;
+
+      // Survol lissé plutôt que brutal : la sphère s'approche, elle ne saute pas.
+      easedHoverRef.current += ((hoverRef.current ? 1 : 0) - easedHoverRef.current) * 0.1;
+      const hover = easedHoverRef.current;
+
+      const burstAge = burstRef.current ? (now - burstRef.current) / 1000 : Infinity;
+      const burst = burstAge < 1.1 ? Math.exp(-burstAge * 3.4) * Math.sin(burstAge * 15) : 0;
+      // Lissé ici : la valeur arrive par à-coups depuis le moteur de parole,
+      // et un rayon qui saute de cran en cran se voit.
+      easedAmpRef.current += (amplitudeRef.current - easedAmpRef.current) * 0.22;
+      const amp = easedAmpRef.current;
+
+      const radius =
+        baseRadius * profile.scale * breath * (1 + hover * 0.07 + amp * 0.11 + burst * 0.05);
+      const turbulence = profile.turbulence * (1 + amp * 2.6 + Math.abs(burst) * 4 + hover * 0.7);
       const spin = elapsed * profile.spin * Math.PI * 2;
 
       if (profile.halo > 0) {
@@ -281,6 +332,18 @@ export function AIPresence({ state, size = 180, className, count, tint }: AIPres
         context!.fillRect(0, 0, size, size);
       }
 
+      // L'onde du clic : un anneau qui s'écarte et s'efface.
+      if (burstAge < 0.9) {
+        const p = burstAge / 0.9;
+        const ringColor =
+          tintStops?.[0] ?? (profile.color === 'iris' ? palette.iris[1] : palette.accent);
+        context!.beginPath();
+        context!.arc(center, center, baseRadius * (1 + p * 0.6), 0, Math.PI * 2);
+        context!.strokeStyle = hexToRgba(ringColor, 0.3 * (1 - p));
+        context!.lineWidth = Math.max(1, size / 120);
+        context!.stroke();
+      }
+
       // Tri par profondeur : les points de devant se dessinent en dernier.
       const projected = particles.map((particle) => {
         const cos = Math.cos(spin);
@@ -289,7 +352,7 @@ export function AIPresence({ state, size = 180, className, count, tint }: AIPres
         const z = particle.x * sin + particle.z * cos;
         const wobble =
           1 +
-          profile.turbulence *
+          turbulence *
             particle.jitter *
             Math.sin(elapsed * 1.7 + particle.phase) *
             (reduceMotion ? 0.35 : 1);
@@ -352,20 +415,42 @@ export function AIPresence({ state, size = 180, className, count, tint }: AIPres
         context!.fill();
       }
 
-      if (!reduceMotion) frame = requestAnimationFrame(draw);
+      // Sous mouvement réduit la boucle s'arrête, sauf si la sphère doit
+      // répondre au pointeur ou suivre une phrase : ce sont des réactions à
+      // une action, pas du mouvement d'ambiance.
+      if (!reduceMotion || interactive || driven) frame = requestAnimationFrame(draw);
     }
 
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [state, size, particleCount, resolved, tint]);
+  }, [state, size, particleCount, resolved, tint, interactive, driven]);
+
+  const poke = () => {
+    burstRef.current = performance.now();
+    onPoke?.();
+  };
 
   return (
     <canvas
       ref={canvasRef}
       style={{ width: size, height: size }}
-      className={cn('block', className)}
-      role="img"
+      className={cn('block', interactive && 'cursor-pointer touch-manipulation', className)}
+      role={interactive ? 'button' : 'img'}
+      tabIndex={interactive ? 0 : undefined}
       aria-label={LABELS[state]}
+      onPointerEnter={interactive ? () => (hoverRef.current = true) : undefined}
+      onPointerLeave={interactive ? () => (hoverRef.current = false) : undefined}
+      onClick={interactive ? poke : undefined}
+      onKeyDown={
+        interactive
+          ? (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                poke();
+              }
+            }
+          : undefined
+      }
     />
   );
 }
