@@ -8,6 +8,7 @@ import type {
   Level,
   PowerState,
   Recommendation,
+  SensorHealth,
   SensorFrame,
   Session,
   SessionOutcome,
@@ -463,6 +464,66 @@ export const mockTransport: Transport = {
       sensors: { ok: state.suspect.size === 0, online: 4 - state.suspect.size, total: 4 },
       buffer: { pending: 0, lastReplayAt: `Sol ${CURRENT_SOL - 5}` },
     });
+  },
+
+  getSensors() {
+    // Une fenêtre déterministe par capteur : une démonstration doit être
+    // reproductible, y compris dans la forme de ses courbes.
+    const wave = (seed: number, base: number, spread: number) => {
+      const random = seeded(seed);
+      return Array.from({ length: 30 }, (_, i) =>
+        Number((base + Math.sin(i / 3.1) * spread + (random() - 0.5) * spread * 0.7).toFixed(2)),
+      );
+    };
+
+    const suspectHr = state.suspect.has('hr');
+
+    return delay<SensorHealth[]>([
+      {
+        key: 'hr',
+        label: 'Cardiaque',
+        model: 'MAX30102',
+        sampleRate: '100 Hz',
+        value: suspectHr ? 214 : 62,
+        unit: 'bpm',
+        window: suspectHr ? wave(11, 205, 12) : wave(11, 62, 4),
+        level: suspectHr ? 'red' : 'green',
+        note: suspectHr ? 'Hors bornes 30–220, mesure ignorée' : null,
+      },
+      {
+        key: 'eda',
+        label: 'Sudation',
+        model: 'GSR analogique',
+        sampleRate: '10 Hz',
+        value: 4.8,
+        unit: 'µS',
+        window: wave(23, 4.8, 0.9),
+        level: 'amber',
+        note: 'Signal bruité — poids réduit dans l’indice',
+      },
+      {
+        key: 'face',
+        label: 'Visage',
+        model: 'OV2640',
+        sampleRate: '5 im/s',
+        value: 0.31,
+        unit: '',
+        window: wave(41, 0.31, 0.08),
+        level: 'green',
+        note: null,
+      },
+      {
+        key: 'voice',
+        label: 'Voix',
+        model: 'INMP441',
+        sampleRate: '16 kHz',
+        value: 0.44,
+        unit: '',
+        window: wave(59, 0.44, 0.1),
+        level: 'green',
+        note: null,
+      },
+    ]);
   },
 
   simulateSuspectSensor(signal) {

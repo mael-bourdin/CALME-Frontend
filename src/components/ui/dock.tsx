@@ -42,6 +42,9 @@ export function Dock({ items, className }: { items: DockItem[]; className?: stri
           const Icon = ICONS[item.icon];
           return (
             <NavLink
+              // `end` sinon /medecin correspond aussi à /medecin/capteurs et
+              // deux onglets s'allument en même temps.
+              end
               key={item.to}
               to={item.to}
               className="group relative grid size-13 place-items-center rounded-full transition-colors duration-300 ease-calm sm:size-14"

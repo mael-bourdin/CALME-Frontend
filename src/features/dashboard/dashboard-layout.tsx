@@ -20,13 +20,13 @@ export function DashboardLayout() {
   const items: DockItem[] = [
     { to: '/medecin', label: 'Équipage', icon: 'crew' },
     { to: '/medecin/alertes', label: 'Alertes', icon: 'alerts', badge: pending },
-    { to: '/medecin/tendances', label: 'Tendances', icon: 'trends' },
+    { to: '/medecin/capteurs', label: 'Capteurs', icon: 'trends' },
     { to: '/medecin/energie', label: 'Énergie', icon: 'power' },
     { to: '/medecin/membre/ana', label: 'Membre', icon: 'member' },
   ];
 
   return (
-    <div className="relative flex min-h-dvh flex-col pb-32">
+    <div className="relative flex min-h-dvh flex-col pb-32 pt-32">
       <div className="absolute right-5 top-5 z-30 sm:right-8 sm:top-8">
         <ThemeToggle />
       </div>
