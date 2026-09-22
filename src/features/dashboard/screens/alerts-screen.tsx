@@ -22,9 +22,9 @@ export function AlertsScreen() {
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-calm" strokeWidth={1.7} aria-hidden />
         <p className="text-sm text-ink-soft">
           Une alerte ne transporte que qui, et quand. Pas la mesure, pas la séance, pas ce qui a été
-          dit. Le détail ne s’ouvre qu’après acquittement, ou avec l’accord explicite de la personne.
-          Techniquement rien ne nous empêcherait d’en montrer davantage — nous avons décidé de ne pas
-          le faire.
+          dit. Le détail ne s’ouvre qu’après acquittement, ou avec l’accord explicite de la
+          personne. Techniquement rien ne nous empêcherait d’en montrer davantage — nous avons
+          décidé de ne pas le faire.
         </p>
       </GlassPanel>
 
@@ -35,7 +35,7 @@ export function AlertsScreen() {
           key={alert.id}
           alert={alert}
           onAcknowledge={async () => {
-            await api.acknowledgeAlert(alert.id, 'Dr. Benali');
+            await api.acknowledgeAlert(alert.id);
             alerts.reload();
           }}
         />

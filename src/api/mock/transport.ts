@@ -44,6 +44,9 @@ import {
 const SPEED = Number(import.meta.env.VITE_MOCK_SPEED ?? 4) || 4;
 const MEASURE_SECONDS = 60;
 
+/** Le médecin connecté. Côté serveur, il vient de la session authentifiée. */
+const SIGNED_IN_DOCTOR = 'Dr. Benali';
+
 function delay<T>(value: T, ms = 220): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(value), ms / SPEED));
 }
@@ -426,11 +429,12 @@ export const mockTransport: Transport = {
     return delay(state.alerts);
   },
 
-  acknowledgeAlert(alertId, acknowledgedBy) {
+  acknowledgeAlert(alertId) {
     const alert = state.alerts.find((a) => a.id === alertId);
     if (!alert) return Promise.reject(new Error('Alerte inconnue'));
     alert.acknowledgedAt = `Sol ${CURRENT_SOL}, 18:26`;
-    alert.acknowledgedBy = acknowledgedBy;
+    // Le mock tient lieu de serveur : c'est lui qui sait qui est connecté.
+    alert.acknowledgedBy = SIGNED_IN_DOCTOR;
     return delay({ ...alert });
   },
 
