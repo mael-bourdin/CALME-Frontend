@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Dock, type DockItem } from '@/components/ui/dock';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -27,7 +28,17 @@ export function DashboardLayout() {
 
   return (
     <div className="relative flex min-h-dvh flex-col pb-32 pt-32">
-      <div className="absolute right-5 top-5 z-30 sm:right-8 sm:top-8">
+      <div className="absolute right-5 top-5 z-30 flex items-center gap-2 sm:right-8 sm:top-8">
+        {/* Fermer le poste, c'est revenir à la cabine : le médecin de bord est
+            un membre d'équipage comme les autres, il y repasse. */}
+        <Link
+          to="/"
+          aria-label="Fermer le poste du médecin"
+          title="Fermer le poste du médecin"
+          className="glass glass-edge grid size-10 place-items-center rounded-full text-ink-soft transition-colors duration-300 ease-calm hover:text-ink"
+        >
+          <X className="size-4.5" strokeWidth={1.7} aria-hidden />
+        </Link>
         <ThemeToggle />
       </div>
 
@@ -48,14 +59,7 @@ export function DashboardLayout() {
 
       <Dock items={items} />
 
-      {/* Pas dans les maquettes, mais la soutenance a besoin d'un aller-retour
-          entre les deux surfaces. Assez discret pour ne pas peser. */}
-      <Link
-        to="/"
-        className="pointer-events-auto absolute bottom-6 left-6 text-xs text-ink-faint transition-colors hover:text-ink-soft"
-      >
-        Aller à la cabine
-      </Link>
+
     </div>
   );
 }

@@ -241,11 +241,17 @@ export function AIPresence({
       watch: readVar('--c-watch'),
     };
 
+    /*
+     * Vert : deux tons, comme la maquette — le turquoise vire au bleu, ce sont
+     * deux voisins. Orange et rouge : un seul ton. Mélanger de l'orange et du
+     * bleu donnait un grésillement de complémentaires, agressif à l'écran là
+     * où l'IA est justement en train d'annoncer qu'on est tendu.
+     */
     const tintStops =
       tint === 'green'
         ? ([palette.calm, palette.accent] as const)
         : tint === 'amber'
-          ? ([palette.watch, palette.accent] as const)
+          ? ([palette.watch, palette.watch] as const)
           : tint === 'red'
             ? ([palette.alert, palette.alert] as const)
             : tint === 'accent'
@@ -267,7 +273,9 @@ export function AIPresence({
       if (tintStops) {
         // Mélangé point par point et non coupé en deux moitiés : une sphère
         // bicolore séparée par une frontière nette se lit comme deux objets.
-        return hexToRgba(mix < 0.62 ? tintStops[0] : tintStops[1], alpha);
+        // En monochrome, c'est l'opacité seule qui donne le relief.
+        const solid = mix < 0.62 ? tintStops[0] : tintStops[1];
+        return hexToRgba(solid, alpha * (0.72 + 0.28 * mix));
       }
       if (profile.color === 'iris') {
         // Les points de gauche tirent vers le rose, ceux de droite vers le cyan.

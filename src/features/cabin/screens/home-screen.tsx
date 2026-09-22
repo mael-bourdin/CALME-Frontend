@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
+import { ArrowRight } from 'lucide-react';
 import { AIPresence } from '@/components/ai/presence';
 import { Button } from '@/components/ui/button';
 import { useSpeech } from '@/lib/use-speech';
@@ -63,6 +65,19 @@ export function HomeScreen({
   return (
     <section className="relative grid min-h-dvh place-items-center overflow-hidden px-6">
       <CabinChrome position="bottom" />
+
+      {/* L'accès au poste du médecin, en pendant des repères de bord posés à
+          gauche. Discret : ce n'est pas l'affaire de l'occupante de la cabine,
+          mais il faut bien y entrer depuis quelque part. */}
+      {!greeting && (
+        <Link
+          to="/medecin"
+          className="fixed bottom-0 right-0 z-20 inline-flex items-center gap-2 px-6 pb-6 text-sm text-ink-faint transition-colors hover:text-ink-soft sm:px-12 sm:pb-[22px]"
+        >
+          Poste du médecin
+          <ArrowRight className="size-3.5" strokeWidth={1.7} aria-hidden />
+        </Link>
+      )}
 
       {/* Cotes relevées sur la maquette C1 : sphère de 84, puis 30 px entre
           chaque élément, le tout centré exactement sur la moitié de l'écran. */}
