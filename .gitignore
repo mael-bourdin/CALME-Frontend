@@ -3,6 +3,12 @@ dist
 dist-ssr
 *.local
 
+# La configuration locale ne se partage pas : chacun pointe son propre serveur.
+# Le modèle à recopier est .env.example, qui lui est suivi.
+.env
+.env.*
+!.env.example
+
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
