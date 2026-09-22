@@ -18,8 +18,8 @@ interface HomeScreenProps {
 const GREETING = 'Installe-toi. Pose la main sur l’accoudoir, je commence à mesurer.';
 
 /** La sphère est dessinée à sa taille de mesure et réduite : une seule toile. */
-const FULL = 290;
-const SMALL = 104;
+const FULL = 304;
+const SMALL = 84;
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -64,7 +64,9 @@ export function HomeScreen({
     <section className="relative grid min-h-dvh place-items-center overflow-hidden px-6">
       <CabinChrome position="bottom" />
 
-      <div className="-mt-12 flex flex-col items-center text-center">
+      {/* Cotes relevées sur la maquette C1 : sphère de 84, puis 30 px entre
+          chaque élément, le tout centré exactement sur la moitié de l'écran. */}
+      <div className="flex flex-col items-center text-center">
         <motion.div
           className="relative grid place-items-center"
           initial={false}
@@ -91,7 +93,7 @@ export function HomeScreen({
           {greeting ? (
             <p
               key="greeting"
-              className="mt-12 max-w-[33rem] animate-[fade-in_0.4s_ease-out_both] font-display text-[clamp(1.75rem,3.6vw,2.75rem)] leading-[1.2] tracking-tight"
+className="mt-[30px] w-[min(45rem,100%)] animate-[fade-in_0.4s_ease-out_both] font-display text-[clamp(1.75rem,3.5vw,3.15rem)] leading-[1.32] tracking-[-0.018em]"
             >
               {/* Révélée mot à mot au rythme de la voix : la phrase se dit,
                   elle ne s'affiche pas. */}
@@ -109,11 +111,11 @@ export function HomeScreen({
               transition={{ duration: 0.3, ease: EASE }}
               className="flex flex-col items-center"
             >
-              <h1 className="mt-14 font-display text-[clamp(2.5rem,5.5vw,3.5rem)] leading-none tracking-tight">
+              <h1 className="mt-[30px] font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-[1.32] tracking-[-0.018em]">
                 Bonsoir {firstName}.
               </h1>
 
-              <p className="mt-11 max-w-md text-balance text-[1.0625rem] text-ink-soft">
+              <p className="mt-[30px] max-w-md text-balance text-[1.125rem] leading-7 text-ink-soft">
                 {lastSessionAt
                   ? `Ta dernière séance remonte à ${lastSessionAt}.`
                   : 'Première séance. Assieds-toi et pose la main sur l’accoudoir.'}
@@ -123,7 +125,7 @@ export function HomeScreen({
                 size="lg"
                 onClick={() => setGreeting(true)}
                 disabled={busy}
-                className="mt-11"
+                className="mt-[30px]"
               >
                 {busy ? 'Ouverture…' : 'Commencer'}
               </Button>

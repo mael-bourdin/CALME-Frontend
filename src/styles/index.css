@@ -166,8 +166,21 @@ body {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60vw 50vw at 18% 8%, var(--veil-warm), transparent 70%),
-    radial-gradient(55vw 45vw at 92% 96%, var(--veil-cool), transparent 70%);
+    /* Relevé sur la maquette : la lumière vient du bas droit, l'ombre bleutée
+       du haut gauche. Je les avais posées à l'envers, ce qui suffisait à
+       changer le climat de tous les écrans. */
+    radial-gradient(
+      50% 50% at 82% 92%,
+      var(--veil-warm),
+      color-mix(in srgb, var(--veil-warm) 31%, transparent) 60%,
+      transparent 100%
+    ),
+    radial-gradient(
+      56% 56% at 3% -1%,
+      var(--veil-cool),
+      color-mix(in srgb, var(--veil-cool) 27%, transparent) 70%,
+      transparent 100%
+    );
 }
 
 :focus-visible {

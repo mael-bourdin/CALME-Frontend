@@ -70,7 +70,6 @@ export function CabinRoute() {
             assessment={session.assessment}
             recommendation={session.recommendation}
             onAccept={session.acceptExercise}
-            onLater={session.reset}
           />
         )}
 
