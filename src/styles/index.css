@@ -1,0 +1,303 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   C.A.L.M.E. — direction artistique
+   Sobre par choix. Le fond ne raconte rien, il porte le verre. La couleur est
+   un signal : les trois états de l'indice, et la sphère quand l'IA parle.
+   ========================================================================== */
+
+@theme inline {
+  --color-canvas: var(--c-canvas);
+  --color-raised: var(--c-raised);
+  --color-overlay: var(--c-overlay);
+  --color-inset: var(--c-inset);
+  --color-hairline: var(--c-hairline);
+
+  --color-ink: var(--c-ink);
+  --color-ink-soft: var(--c-ink-soft);
+  --color-ink-faint: var(--c-ink-faint);
+
+  --color-calm: var(--c-calm);
+  --color-watch: var(--c-watch);
+  --color-alert: var(--c-alert);
+  --color-unknown: var(--c-unknown);
+
+  --color-accent: var(--c-accent);
+  --color-accent-surface: var(--c-accent-surface);
+  --color-accent-line: var(--c-accent-line);
+  --color-quiet: var(--c-quiet);
+
+  --color-iris-1: var(--c-iris-1);
+  --color-iris-2: var(--c-iris-2);
+  --color-iris-3: var(--c-iris-3);
+
+  --font-display: 'Bodoni Moda', 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius-panel: 1.75rem;
+  --radius-card: 1.25rem;
+  --radius-pill: 999px;
+
+  --ease-calm: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Mode clair — le défaut. Bleu très clair, jamais blanc : le verre a besoin
+   d'une surface qui n'est pas déjà la sienne.
+   -------------------------------------------------------------------------- */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --c-canvas: #d9e3f1;
+  --c-raised: #e7eef8;
+  --c-overlay: #f3f7fd;
+  --c-inset: #c5d3e8;
+  --c-hairline: #a9bbd6;
+
+  --c-ink: #0a0e1a;
+  --c-ink-soft: #4a5468;
+  --c-ink-faint: #838da3;
+
+  --c-calm: #0e9f8f;
+  --c-watch: #b8730a;
+  --c-alert: #c9453a;
+  --c-unknown: #6b7688;
+
+  --c-accent: #1f4480;
+  --c-accent-surface: #dce8fb;
+  --c-accent-line: #a9c6f5;
+  --c-quiet: #7a93bc;
+
+  --c-iris-1: #d9308f;
+  --c-iris-2: #6d3be8;
+  --c-iris-3: #0e9aac;
+
+  /* Le verre : trois densités, une arête lumineuse, une ombre courte. */
+  --glass-thin: rgb(255 255 255 / 0.3);
+  --glass-regular: rgb(255 255 255 / 0.48);
+  --glass-thick: rgb(255 255 255 / 0.62);
+  --glass-edge-high: rgb(255 255 255 / 0.95);
+  --glass-edge-low: rgb(255 255 255 / 0.12);
+  --glass-shadow: rgb(10 14 26 / 0.13);
+  --glass-blur: 22px;
+
+  --veil-warm: rgb(255 255 255 / 0.7);
+  --veil-cool: rgb(122 147 188 / 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   Mode sombre — l'écran de la cabine. Le dossier insiste : la pièce fait
+   partie de la séance, l'écran ne doit pas travailler contre elle.
+   -------------------------------------------------------------------------- */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --c-canvas: #070b14;
+  --c-raised: #0b1220;
+  --c-overlay: #101a2c;
+  --c-inset: #16233a;
+  --c-hairline: #1e2e49;
+
+  --c-ink: #e8eef9;
+  --c-ink-soft: #9fb0c9;
+  --c-ink-faint: #5d708c;
+
+  --c-calm: #4fd1c5;
+  --c-watch: #f0b429;
+  --c-alert: #e86a5c;
+  --c-unknown: #7c8da6;
+
+  --c-accent: #a6c8ff;
+  --c-accent-surface: #16233a;
+  --c-accent-line: #3b6fb8;
+  --c-quiet: #5d708c;
+
+  --c-iris-1: #ff8fd0;
+  --c-iris-2: #a78bfa;
+  --c-iris-3: #6fe3e1;
+
+  --glass-thin: rgb(255 255 255 / 0.04);
+  --glass-regular: rgb(255 255 255 / 0.07);
+  --glass-thick: rgb(255 255 255 / 0.1);
+  --glass-edge-high: rgb(255 255 255 / 0.22);
+  --glass-edge-low: rgb(255 255 255 / 0.03);
+  --glass-shadow: rgb(0 0 0 / 0.45);
+  --glass-blur: 26px;
+
+  --veil-warm: rgb(166 200 255 / 0.07);
+  --veil-cool: rgb(11 18 32 / 0.6);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+* {
+  border-color: var(--c-hairline);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--c-canvas);
+  color: var(--c-ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition:
+    background-color 420ms var(--ease-calm),
+    color 420ms var(--ease-calm);
+}
+
+/* Le voile de fond : un éclat clair en haut à gauche, une ombre froide en bas
+   à droite. Juste assez de matière pour que le verre ait quoi réfracter. */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60vw 50vw at 18% 8%, var(--veil-warm), transparent 70%),
+    radial-gradient(55vw 45vw at 92% 96%, var(--veil-cool), transparent 70%);
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: var(--c-accent-surface);
+  color: var(--c-accent);
+}
+
+/* Chiffres tabulaires partout : c'est un instrument, les colonnes doivent
+   s'aligner et un chiffre ne doit pas faire sauter la ligne en changeant. */
+.tabular,
+.font-mono,
+[class*='font-mono'] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Verre
+   -------------------------------------------------------------------------- */
+.glass {
+  position: relative;
+  background: var(--glass-regular);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  box-shadow: 0 10px 40px var(--glass-shadow);
+}
+
+.glass-thin {
+  background: var(--glass-thin);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+}
+
+.glass-thick {
+  background: var(--glass-thick);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+}
+
+/* L'arête lumineuse. Un simple border ne suffit pas : c'est le dégradé du
+   haut-gauche vers le bas-droite qui fait lire la surface comme du verre. */
+.glass-edge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--glass-edge-high),
+    var(--glass-edge-low) 55%,
+    transparent
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass,
+  .glass-thin,
+  .glass-thick {
+    background: var(--c-overlay);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mouvement
+   Le dossier demande un écran sans animation vive. Les transitions servent à
+   montrer ce qui a changé, jamais à décorer.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.88);
+  }
+}
