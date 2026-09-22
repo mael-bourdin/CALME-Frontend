@@ -29,12 +29,12 @@ function Row({ entry, index }: { entry: CrewSummary; index: number }) {
       <Link
         to={`/medecin/membre/${entry.member.id}`}
         className={cn(
-          'group grid items-center gap-x-5 gap-y-2 rounded-card px-3 py-3.5 transition-colors',
+          'group grid items-center gap-x-5 gap-y-2 rounded-card px-3 py-2.5 transition-colors',
           'hover:bg-overlay/60',
           'grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_minmax(0,13rem)_1fr_auto_auto_auto]',
         )}
       >
-        <Avatar name={entry.member.displayName} level={entry.level as Level} />
+        <Avatar name={entry.member.displayName} level={entry.level as Level} size={48} />
 
         <div className="min-w-0">
           <p className="truncate">{entry.member.displayName}</p>
