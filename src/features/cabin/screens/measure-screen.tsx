@@ -12,8 +12,6 @@ interface MeasureScreenProps {
   consent: ConsentState;
   onToggleConsent: (key: keyof ConsentState) => void;
   connection?: ConnectionState;
-  /** Les signaux absents, dits à l'écran plutôt que cachés. */
-  reducedConfidence?: string | null;
   /** La question posée par l'IA pendant qu'elle écoute. */
   question?: string;
 }
@@ -35,7 +33,6 @@ export function MeasureScreen({
   consent,
   onToggleConsent,
   connection,
-  reducedConfidence,
   question = 'Qu’est-ce que tu as fait aujourd’hui ?',
 }: MeasureScreenProps) {
   return (
@@ -60,12 +57,6 @@ className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem
         >
           {question}
         </motion.h1>
-
-        {reducedConfidence && (
-          <p className="mt-6 max-w-md text-balance text-center text-sm text-watch">
-            {reducedConfidence}
-          </p>
-        )}
       </div>
 
       {/* Bas d'écran : pastilles, 41 px, bande de relevés, puis 46 px jusqu'au

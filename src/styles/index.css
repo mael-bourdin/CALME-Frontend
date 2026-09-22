@@ -281,6 +281,15 @@ body {
   }
 }
 
+@keyframes ring {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 @keyframes dial {
   from {
     stroke-dashoffset: var(--dial-from);

@@ -60,7 +60,7 @@ export function ExerciseScreen({
           exerciseId={exerciseId}
           durationMinutes={durationMinutes}
           onComplete={onComplete}
-          size={520}
+          size={428}
         />
       </div>
 

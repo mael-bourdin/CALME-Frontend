@@ -34,13 +34,12 @@ interface BreathingGuideProps {
 }
 
 /**
- * Le guide respiratoire : un carré dont le contour se parcourt.
+ * Le guide respiratoire : un anneau qui se referme, une fois par cycle.
  *
- * Le trait part du coin haut droit et tourne dans le sens des aiguilles. Sur la
- * respiration carrée, chaque côté vaut exactement une phase — le dessin n'est
- * pas une métaphore du rythme, il est le rythme. Sur les autres motifs, les
- * côtés ne tombent plus juste, et c'est sans importance : ce qu'on suit est le
- * mot au centre, le contour ne fait que dire où on en est du cycle.
+ * L'anneau est animé en CSS, pas en JavaScript. C'est ce qui le rend fluide :
+ * le navigateur interpole lui-même, à la fréquence de l'écran, sans qu'aucun
+ * état React ne change. Le compte à rebours au centre, lui, ne bouge qu'une
+ * fois par seconde — il peut se contenter d'un minuteur.
  *
  * Pendant l'exercice, l'IA est en `idle` : elle accompagne, elle ne parle pas.
  */
@@ -48,7 +47,7 @@ export function BreathingGuide({
   exerciseId,
   durationMinutes,
   onComplete,
-  size = 520,
+  size = 428,
 }: BreathingGuideProps) {
   const pattern = useMemo(() => PATTERNS[exerciseId] ?? DEFAULT_PATTERN, [exerciseId]);
   const cycleSeconds = useMemo(
@@ -60,10 +59,8 @@ export function BreathingGuide({
   const finished = useRef(false);
 
   useEffect(() => {
-    const start = performance.now();
-    const id = window.setInterval(() => {
-      setElapsed((performance.now() - start) / 1000);
-    }, 100);
+    const start = Date.now();
+    const id = window.setInterval(() => setElapsed((Date.now() - start) / 1000), 200);
     return () => window.clearInterval(id);
   }, [exerciseId]);
 
@@ -87,10 +84,9 @@ export function BreathingGuide({
     consumed += candidate.seconds;
   }
   const countdown = Math.max(1, Math.ceil(consumed + step.seconds - inCycle));
-  const cycleRatio = inCycle / cycleSeconds;
 
-  const inset = 10;
-  const side = size - inset * 2;
+  const stroke = 20;
+  const radius = (size - stroke) / 2;
   const center = size / 2;
 
   return (
@@ -103,42 +99,35 @@ export function BreathingGuide({
         role="img"
         aria-label={`${step.label}, ${countdown} secondes`}
       >
-        {/* Le rect démarre son tracé en haut à gauche ; la rotation d'un quart
-            de tour place le départ en haut à droite, comme sur la maquette. */}
-        <g transform={`rotate(90 ${center} ${center})`}>
-          <rect
-            x={inset}
-            y={inset}
-            width={side}
-            height={side}
-            rx={14}
+        {/* Tourné d'un quart pour partir de midi. */}
+        <g transform={`rotate(-90 ${center} ${center})`}>
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
             fill="none"
             stroke="var(--c-hairline)"
-            strokeWidth={20}
-            strokeLinejoin="round"
+            strokeWidth={stroke}
             opacity={0.65}
           />
-          <rect
-            x={inset}
-            y={inset}
-            width={side}
-            height={side}
-            rx={14}
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
             fill="none"
             stroke="var(--c-accent)"
-            strokeWidth={20}
-            strokeLinejoin="round"
+            strokeWidth={stroke}
+            strokeLinecap="round"
             pathLength={1}
-            strokeDasharray={`${cycleRatio} 1`}
+            strokeDasharray={1}
+            style={{ animation: `ring ${cycleSeconds}s linear infinite` }}
           />
         </g>
       </svg>
 
       <div className="relative z-10 flex flex-col items-center">
-        <AIPresence state="idle" tint="accent" size={Math.round(size * 0.29)} count={340} />
+        <AIPresence state="idle" tint="accent" size={Math.round(size * 0.35)} count={340} />
 
-        {/* Le mot est la consigne : il ne passe pas par AnimatePresence, pour
-            qu'aucune animation interrompue ne puisse le laisser invisible. */}
         <p
           key={step.label}
           className="mt-9 animate-[fade-in_0.35s_ease-out] font-display text-[2.125rem] leading-none tracking-tight"
@@ -146,10 +135,7 @@ export function BreathingGuide({
           {step.label}
         </p>
 
-        <p
-          className="mt-6 font-display text-[4.5rem] leading-none tabular text-accent"
-          aria-hidden
-        >
+        <p className="mt-6 font-display text-[4.5rem] leading-none tabular text-accent" aria-hidden>
           {countdown}
         </p>
       </div>
@@ -161,10 +147,10 @@ export function BreathingGuide({
 export function useExerciseProgress(durationMinutes: number): number {
   const [ratio, setRatio] = useState(0);
   useEffect(() => {
-    const start = performance.now();
+    const start = Date.now();
     const total = durationMinutes * 60_000;
     const id = window.setInterval(() => {
-      setRatio(Math.min(1, (performance.now() - start) / total));
+      setRatio(Math.min(1, (Date.now() - start) / total));
     }, 250);
     return () => window.clearInterval(id);
   }, [durationMinutes]);
