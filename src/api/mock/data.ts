@@ -27,14 +27,38 @@ export function levelFor(index: number): Level {
 }
 
 export const CREW: CrewMember[] = [
-  { id: 'mei', displayName: 'Mei Tanaka', role: 'Ingénieure systèmes', initials: 'MT', joinedSol: 0 },
+  {
+    id: 'mei',
+    displayName: 'Mei Tanaka',
+    role: 'Ingénieure systèmes',
+    initials: 'MT',
+    joinedSol: 0,
+  },
   { id: 'ana', displayName: 'Ana Ferreira', role: 'Commandante', initials: 'AF', joinedSol: 0 },
-  { id: 'priya', displayName: 'Priya Raman', role: 'Biologiste serre', initials: 'PR', joinedSol: 0 },
+  {
+    id: 'priya',
+    displayName: 'Priya Raman',
+    role: 'Biologiste serre',
+    initials: 'PR',
+    joinedSol: 0,
+  },
   { id: 'nour', displayName: 'Nour Haddad', role: 'Navigation', initials: 'NH', joinedSol: 0 },
   { id: 'lars', displayName: 'Lars Nyqvist', role: 'Propulsion', initials: 'LN', joinedSol: 0 },
   { id: 'tomas', displayName: 'Tomas Varga', role: 'Maintenance', initials: 'TV', joinedSol: 0 },
-  { id: 'youssef', displayName: 'Youssef Benali', role: 'Médecin de bord', initials: 'YB', joinedSol: 0 },
-  { id: 'diego', displayName: 'Diego Morales', role: 'Recyclage ECLSS', initials: 'DM', joinedSol: 0 },
+  {
+    id: 'youssef',
+    displayName: 'Youssef Benali',
+    role: 'Médecin de bord',
+    initials: 'YB',
+    joinedSol: 0,
+  },
+  {
+    id: 'diego',
+    displayName: 'Diego Morales',
+    role: 'Recyclage ECLSS',
+    initials: 'DM',
+    joinedSol: 0,
+  },
 ];
 
 export const OCCUPANT_ID = 'mei';
@@ -150,7 +174,11 @@ export function buildCrewOverview(): CrewSummary[] {
 }
 
 /** Trente jours d'indice pour une personne, avec une dérive lente et du bruit. */
-export function buildHistory(crewId: string, from: number, to: number): { sol: number; index: number }[] {
+export function buildHistory(
+  crewId: string,
+  from: number,
+  to: number,
+): { sol: number; index: number }[] {
   const random = seeded(crewId.length * 9973 + from * 31);
   const points: { sol: number; index: number }[] = [];
   for (let i = 0; i < 30; i += 1) {
@@ -208,7 +236,10 @@ export const ALERTS: Alert[] = [
 
 /** Le budget du dossier, poste par poste. */
 export const POWER_LINES: PowerBudgetLine[] = [
-  { label: 'Capteurs et ESP32', byMode: { standby: 1.2, measuring: 2.4, session: 2.4, degraded: 2.0 } },
+  {
+    label: 'Capteurs et ESP32',
+    byMode: { standby: 1.2, measuring: 2.4, session: 2.4, degraded: 2.0 },
+  },
   { label: 'Caméra', byMode: { standby: 0, measuring: 1.8, session: 1.8, degraded: 0 } },
   { label: 'Serveur', byMode: { standby: 8, measuring: 22, session: 28, degraded: 14 } },
   { label: 'Écran', byMode: { standby: 0, measuring: 12, session: 12, degraded: 0 } },
@@ -227,7 +258,10 @@ export function buildTrends(): AggregateTrends {
   const random = seeded(4212);
   const meanIndex = Array.from({ length: 30 }, (_, i) => {
     const trend = 31 + (43 - 31) * (i / 29);
-    return { sol: CURRENT_SOL - 29 + i, value: Math.round((trend + (random() - 0.5) * 2.4) * 10) / 10 };
+    return {
+      sol: CURRENT_SOL - 29 + i,
+      value: Math.round((trend + (random() - 0.5) * 2.4) * 10) / 10,
+    };
   });
   return {
     meanIndex,
@@ -247,7 +281,7 @@ export const FALLBACK_MESSAGES: Record<Level, string> = {
   green: "Ton indice est dans ta zone habituelle. Je te propose l'exercice prévu par les règles.",
   amber:
     "Le modèle local est coupé pour économiser l'énergie. Je te propose l'exercice prévu par les règles, sans l'adapter à tes séances précédentes.",
-  red: "Ton indice a franchi le seuil. Le médecin de bord est prévenu. On commence par respirer.",
+  red: 'Ton indice a franchi le seuil. Le médecin de bord est prévenu. On commence par respirer.',
   unreliable: "Je ne calcule pas d'indice : les mesures ne sont pas exploitables.",
 };
 
@@ -256,7 +290,7 @@ export const MODEL_MESSAGES: Record<Level, string> = {
   green:
     "Ton indice est à 28, c'est ta zone habituelle. Rien à signaler — huit minutes de journal vocal si tu veux poser ta journée.",
   amber:
-    "Ta variabilité cardiaque est basse et ta conductance de peau est nettement au-dessus de ta normale. Cinq minutes de cohérence cardiaque.",
+    'Ta variabilité cardiaque est basse et ta conductance de peau est nettement au-dessus de ta normale. Cinq minutes de cohérence cardiaque.',
   red: "Tu es au-dessus du seuil. J'ai prévenu le médecin de bord — il sait que tu l'as franchi, pas ce que tu as dit. On commence par respirer.",
   unreliable:
     "Une de tes mesures est sortie des bornes plausibles. Ce n'est pas une urgence, c'est un capteur à vérifier.",
