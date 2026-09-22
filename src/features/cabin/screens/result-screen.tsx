@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { useSpeech } from '@/lib/use-speech';
 import { ArrowRight } from 'lucide-react';
 import { AIPresence } from '@/components/ai/presence';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,11 @@ export function ResultScreen({
     ? 'La mesure n’est pas exploitable. Je préfère ne rien en conclure.'
     : (recommendation?.message ?? 'Je regarde encore.');
 
+  // La sphère bat au rythme de la phrase qu'elle prononce. Le texte, lui,
+  // s'affiche d'un coup : c'est un résultat, on doit pouvoir le relire tout de
+  // suite sans attendre qu'une animation finisse de le livrer.
+  const speech = useSpeech(sentence);
+
   return (
     <section className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6">
       <CabinChrome position="top" />
@@ -46,6 +52,7 @@ export function ResultScreen({
           state={assessment.level === 'red' ? 'alert' : 'speaking'}
           size={270}
           tint={tint}
+          amplitude={speech.amplitude}
         />
 
         <motion.h1

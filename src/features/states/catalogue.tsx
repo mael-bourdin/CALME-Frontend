@@ -35,6 +35,15 @@ export const STATES: StateEntry[] = [
     render: () => <HomeScreen firstName="Mei" lastSessionAt="deux jours" onStart={noop} />,
   },
   {
+    id: 'ouverture',
+    group: 'Cabine',
+    title: 'Ouverture',
+    note: 'Ce qui se passe entre « Commencer » et la mesure : la sphère grandit jusqu’à sa taille de mesure et prononce sa phrase, révélée mot à mot. L’écran suivant la reprend au même endroit, donc on ne voit pas de coupure.',
+    render: () => (
+      <HomeScreen firstName="Mei" lastSessionAt="deux jours" onStart={noop} autoGreet />
+    ),
+  },
+  {
     id: 'mesure',
     group: 'Cabine',
     title: 'Mesure',
