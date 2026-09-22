@@ -7,6 +7,8 @@ import { AlertsScreen } from '@/features/dashboard/screens/alerts-screen';
 import { TrendsScreen } from '@/features/dashboard/screens/trends-screen';
 import { PowerScreen } from '@/features/dashboard/screens/power-screen';
 import { MemberScreen } from '@/features/dashboard/screens/member-screen';
+import { StatesGallery } from '@/features/states/states-gallery';
+import { StateView } from '@/features/states/state-view';
 
 /**
  * Deux surfaces, deux publics.
@@ -35,5 +37,9 @@ export const router = createBrowserRouter([
       { path: 'membre/:crewId', element: <MemberScreen /> },
     ],
   },
+  // Le catalogue : chaque écran et chaque alternative, atteignables un par un
+  // pour la soutenance, sans avoir à dérouler une séance entière.
+  { path: '/ecrans', element: <StatesGallery /> },
+  { path: '/ecrans/:stateId', element: <StateView /> },
   { path: '*', element: <Navigate to="/" replace /> },
 ]);
