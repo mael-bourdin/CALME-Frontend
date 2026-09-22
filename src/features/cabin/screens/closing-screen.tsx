@@ -26,12 +26,13 @@ function Figure({ label, value, delay }: { label: string; value: number | null; 
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="flex flex-col items-center gap-2"
+      className="flex flex-col items-center gap-1"
     >
-      <span className="text-[0.9375rem] text-ink-faint">{label}</span>
+      <span className="text-sm leading-5 text-ink-faint">{label}</span>
       <span
         className={cn(
-          'font-display leading-none tabular text-[clamp(3.5rem,8vw,6rem)]',
+          // Relevé sur C5 : Bodoni SemiBold 76, interligne 100, chasse -1,5.
+          'font-display font-semibold leading-[100px] tabular text-[clamp(3rem,5.3vw,76px)] tracking-[-0.0197em]',
           toneFor(value),
         )}
       >
@@ -54,29 +55,31 @@ function Figure({ label, value, delay }: { label: string; value: number | null; 
  */
 export function ClosingScreen({ outcome, onFeedback, onDone }: ClosingScreenProps) {
   return (
-    <section className="relative grid min-h-dvh place-items-center overflow-hidden px-6">
+    <section className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6">
       <CabinChrome position="bottom" />
 
-      <div className="-mt-8 flex flex-col items-center text-center">
+      {/* Cotes de C5 : titre posé à 234 du haut, comme les autres écrans de
+          cabine, plutôt que centré — le centrage tombait trente pixels trop haut. */}
+      <div className="flex flex-col items-center pt-[234px] text-center">
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display text-[clamp(2rem,4vw,2.75rem)] leading-none tracking-tight"
+          className="font-display font-medium text-[clamp(1.75rem,2.8vw,2.5rem)] leading-[54px] tracking-[-0.0125em]"
         >
           Séance terminée.
         </motion.h1>
 
-        <div className="mt-20 flex items-end gap-10 sm:gap-14">
+        <div className="mt-[61px] flex items-center gap-[48px]">
           <Figure label="avant" value={outcome.indexBefore} delay={0.2} />
           <motion.span
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.45, duration: 0.5 }}
-            className="mb-6 text-ink-faint"
+            className="text-ink-faint"
             aria-hidden
           >
-            <ArrowRight className="size-6" strokeWidth={1.5} />
+            <ArrowRight className="size-8" strokeWidth={1.5} />
           </motion.span>
           <Figure label="après" value={outcome.indexAfter} delay={0.35} />
         </div>
@@ -85,7 +88,7 @@ export function ClosingScreen({ outcome, onFeedback, onDone }: ClosingScreenProp
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.6 }}
-          className="mt-16 text-[1.0625rem] text-ink-soft"
+          className="mt-[61px] text-base leading-6 text-ink-faint"
         >
           {outcome.alertRaised
             ? 'Le médecin de bord sait que tu as franchi le seuil. Ni la mesure ni ce que tu as dit ne lui sont transmis.'
@@ -96,7 +99,7 @@ export function ClosingScreen({ outcome, onFeedback, onDone }: ClosingScreenProp
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.85, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-11 flex items-center gap-3"
+          className="mt-[44px] flex items-center gap-3"
         >
           <Button
             variant="secondary"

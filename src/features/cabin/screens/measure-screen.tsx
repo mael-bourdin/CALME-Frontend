@@ -42,19 +42,21 @@ export function MeasureScreen({
     <section className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6">
       <CabinChrome connection={connection} position="top" />
 
-      <div className="flex flex-1 flex-col items-center justify-center pb-40 pt-24 sm:pb-44">
+      {/* Cotes relevées sur C2 : sphère de 304 posée à 97 du haut, question
+          juste dessous sur 722 de large. */}
+      <div className="flex w-full flex-col items-center pt-[97px]">
         {/* Iridescente : sur cet écran l'IA pose une question, donc elle parle. Le
             témoin rouge du micro n'est pas sur la sphère mais dans la pastille
             « Micro » — c'est là qu'on va le chercher quand on se demande ce qui
             est ouvert. */}
-        <AIPresence state="speaking" size={290} />
+        <AIPresence state="speaking" size={304} />
 
         <motion.h1
           key={question}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-12 max-w-[33rem] text-center font-display text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.15] tracking-tight"
+className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem,3.5vw,50.41px)] leading-[1.322] tracking-[-0.018em]"
         >
           {question}
         </motion.h1>
@@ -66,9 +68,11 @@ export function MeasureScreen({
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 flex flex-col items-center gap-6 px-6 pb-8">
+      {/* Bas d'écran : pastilles, 41 px, bande de relevés, puis 46 px jusqu'au
+          filet de progression. */}
+      <div className="fixed inset-x-0 bottom-0 z-20 flex flex-col items-center gap-[41px] px-6 pb-[46px]">
         <PrivacyToggles consent={consent} onToggle={onToggleConsent} />
-        <SensorStrip frame={frame} className="max-w-5xl" />
+        <SensorStrip frame={frame} className="max-w-[1040px]" />
       </div>
 
       <CabinProgress ratio={elapsedSeconds / totalSeconds} />

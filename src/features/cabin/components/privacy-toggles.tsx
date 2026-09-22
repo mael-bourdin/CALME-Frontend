@@ -34,7 +34,7 @@ export function PrivacyToggles({ consent, onToggle, className }: PrivacyTogglesP
   ];
 
   return (
-    <div className={cn('flex items-center justify-center gap-3', className)}>
+    <div className={cn('flex items-center justify-center gap-[14px]', className)}>
       {items.map(({ key, label, on, Icon }) => (
         <button
           key={key}
@@ -42,12 +42,14 @@ export function PrivacyToggles({ consent, onToggle, className }: PrivacyTogglesP
           onClick={() => onToggle(key)}
           aria-pressed={on}
           className={cn(
-            'glass glass-edge inline-flex items-center gap-2.5 rounded-pill px-4 py-2.5',
-            'text-sm transition-all duration-300 ease-calm hover:bg-overlay/70',
-            on ? 'text-ink' : 'text-unknown',
+            // Relevé sur C2 : 44,5 de haut, 17 de rembourrage, 9 entre l'icône
+            // et le mot, et le mot en gris moyen même quand le capteur est ouvert.
+            'glass glass-edge inline-flex h-[44.5px] items-center gap-[9px] rounded-pill px-[17px]',
+            'text-sm leading-5 transition-all duration-300 ease-calm hover:bg-overlay/70',
+            on ? 'text-ink-soft' : 'text-unknown',
           )}
         >
-          <Icon className="size-4" strokeWidth={1.7} aria-hidden />
+          <Icon className="size-[17px]" strokeWidth={1.7} aria-hidden />
           {label}
           <span className="sr-only">
             {on ? ' activé, appuyer pour couper' : ' coupé, appuyer pour activer'}

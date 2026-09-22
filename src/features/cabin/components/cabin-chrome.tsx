@@ -39,12 +39,17 @@ export function CabinChrome({
     <>
       <div
         className={cn(
-          'pointer-events-none fixed left-0 z-20 px-6 font-mono text-sm leading-tight sm:px-12',
-          position === 'top' ? 'top-0 py-6 sm:py-12' : 'bottom-0 py-6 sm:py-12',
+          // Relevé sur les maquettes : 48 px du bord gauche, 40 px du haut ou
+          // 22 px du bas, et les deux lignes à 20 px d'interligne.
+          'pointer-events-none fixed left-0 z-20 px-6 font-mono text-sm leading-5 sm:px-12',
+          position === 'top' ? 'top-0 pt-6 sm:pt-10' : 'bottom-0 pb-6 sm:pb-[22px]',
           className,
         )}
       >
-        <p className="text-ink-soft">Sol {sol.toLocaleString('fr-FR')}</p>
+        {/* Espace fine ordinaire : `toLocaleString` pose une espace insécable
+            étroite, qui décale les chiffres de trois pixels par rapport à la
+            maquette. */}
+        <p className="text-ink-soft">Sol {String(sol).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</p>
         <p className="text-ink-faint">{time}</p>
       </div>
 
@@ -81,7 +86,7 @@ export function CabinChrome({
  */
 export function CabinProgress({ ratio }: { ratio: number }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 h-[3px] bg-hairline/45">
+    <div className="fixed inset-x-0 bottom-0 z-30 h-[6px] bg-hairline">
       <motion.div
         className="h-full bg-accent"
         initial={{ scaleX: 0 }}
