@@ -76,7 +76,6 @@ export const STATES: StateEntry[] = [
         assessment={assessment({ index: 28, level: 'green' })}
         recommendation={recommendation('green')}
         onAccept={noop}
-        onLater={noop}
       />
     ),
   },
@@ -90,7 +89,6 @@ export const STATES: StateEntry[] = [
         assessment={assessment({ index: 58, level: 'amber' })}
         recommendation={recommendation('amber')}
         onAccept={noop}
-        onLater={noop}
       />
     ),
   },
@@ -104,7 +102,6 @@ export const STATES: StateEntry[] = [
         assessment={assessment({ index: 74, level: 'red' })}
         recommendation={recommendation('red')}
         onAccept={noop}
-        onLater={noop}
       />
     ),
   },
@@ -198,7 +195,6 @@ export const STATES: StateEntry[] = [
         })}
         recommendation={null}
         onAccept={noop}
-        onLater={noop}
       />
     ),
   },
@@ -212,7 +208,6 @@ export const STATES: StateEntry[] = [
         assessment={assessment({ index: 58, level: 'amber' })}
         recommendation={recommendation('amber', true)}
         onAccept={noop}
-        onLater={noop}
       />
     ),
   },

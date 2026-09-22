@@ -10,7 +10,6 @@ interface ResultScreenProps {
   assessment: Assessment;
   recommendation: Recommendation | null;
   onAccept: () => void;
-  onLater: () => void;
 }
 
 /**
@@ -22,15 +21,10 @@ interface ResultScreenProps {
  * qui évite une étiquette « ALERTE » que personne n'a envie de lire en sortant
  * d'un quart de huit heures.
  *
- * L'indice reste disponible, en petit, sous la phrase : le dossier demande
- * qu'il soit calculé et montré, mais rien n'oblige à en faire le sujet.
+ * La maquette ne montre ni l'indice chiffré ni le moyen de refuser l'exercice.
+ * Les deux sont retirés : c'est l'écran tel qu'il est dessiné.
  */
-export function ResultScreen({
-  assessment,
-  recommendation,
-  onAccept,
-  onLater,
-}: ResultScreenProps) {
+export function ResultScreen({ assessment, recommendation, onAccept }: ResultScreenProps) {
   const unreliable = assessment.level === 'unreliable';
   const tint = unreliable ? undefined : (assessment.level as 'green' | 'amber' | 'red');
 
@@ -47,10 +41,12 @@ export function ResultScreen({
     <section className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6">
       <CabinChrome position="top" />
 
-      <div className="flex flex-1 flex-col items-center justify-center pb-24 pt-24">
+      {/* Cotes de C3 : sphère de 304 posée à 177 du haut, la phrase juste
+          dessous sur 722 de large, le bouton 45 px plus bas. */}
+      <div className="flex w-full flex-col items-center pt-[177px]">
         <AIPresence
           state={assessment.level === 'red' ? 'alert' : 'speaking'}
-          size={270}
+          size={304}
           tint={tint}
           amplitude={speech.amplitude}
         />
@@ -59,27 +55,17 @@ export function ResultScreen({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-11 max-w-4xl text-balance text-center font-display text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.15] tracking-tight"
+className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem,3.5vw,50.41px)] leading-[1.322] tracking-[-0.018em]"
         >
           {sentence}
         </motion.h1>
 
-        {!unreliable && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="mt-7 font-mono text-sm text-ink-faint"
-          >
-            indice {assessment.index}
-          </motion.p>
-        )}
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-10 flex flex-col items-center gap-4"
+          className="mt-[45px] flex flex-col items-center gap-4"
         >
           <Button
             size="lg"
@@ -90,15 +76,6 @@ export function ResultScreen({
             {unreliable ? 'Reprendre la mesure' : 'Voir mes résultats'}
           </Button>
 
-          {!unreliable && (
-            <button
-              type="button"
-              onClick={onLater}
-              className="text-sm text-ink-faint transition-colors hover:text-ink-soft"
-            >
-              Plus tard
-            </button>
-          )}
         </motion.div>
       </div>
     </section>
