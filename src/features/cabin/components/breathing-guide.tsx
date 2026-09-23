@@ -130,12 +130,19 @@ export function BreathingGuide({
 
         <p
           key={step.label}
-          className="mt-9 animate-[fade-in_0.35s_ease-out] font-display text-[2.125rem] leading-none tracking-tight"
+          // À 260 (cercle compact), le contenu intérieur (sphère + consigne +
+          // compte à rebours) doit tenir dans une boîte bien plus petite que
+          // les 428 d'origine : la consigne et le compte à rebours perdent
+          // du corps et de la marge sous 520 px de haut.
+          className="mt-9 animate-[fade-in_0.35s_ease-out] font-display text-[2.125rem] leading-none tracking-tight [@media(max-height:520px)]:mt-3 [@media(max-height:520px)]:text-[1.375rem]"
         >
           {step.label}
         </p>
 
-        <p className="mt-6 font-display text-[4.5rem] leading-none tabular text-accent" aria-hidden>
+        <p
+          className="mt-6 font-display text-[4.5rem] leading-none tabular text-accent [@media(max-height:520px)]:mt-2 [@media(max-height:520px)]:text-[2.5rem]"
+          aria-hidden
+        >
           {countdown}
         </p>
       </div>

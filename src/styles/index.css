@@ -54,6 +54,15 @@
   --cabine-cercle: 260px;
 }
 
+/* Convention des ecrans de cabine : chaque valeur fixe qui deborde sur la
+   dalle courte recoit une variante `[@media(max-height:520px)]:` posee a
+   cote de l'originale, jamais a sa place. 520 plutot que 480 (la hauteur
+   reelle) pour absorber la barre d'adresse d'un test hors mode kiosque.
+   Au-dessus du seuil, rien ne bouge. Les tailles pilotees par une prop
+   JavaScript (sphere de presence, anneau de respiration) suivent le meme
+   seuil via `useCompactCabin` (src/features/cabin/hooks), une classe ne
+   pouvant pas changer un argument de composant. */
+
 /* --------------------------------------------------------------------------
    Mode clair — le défaut. Bleu très clair, jamais blanc : le verre a besoin
    d'une surface qui n'est pas déjà la sienne.

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Music, Pause, Play, X } from 'lucide-react';
 import { BreathingGuide, useExerciseProgress } from '../components/breathing-guide';
 import { CabinChrome, CabinProgress } from '../components/cabin-chrome';
+import { useCompactCabin } from '../hooks/use-compact-cabin';
 
 interface ExerciseScreenProps {
   exerciseId: string;
@@ -34,6 +35,12 @@ export function ExerciseScreen({
   const [paused, setPaused] = useState(false);
   const remaining = durationMinutes * 60 * (1 - progress);
 
+  // Le cercle est codé en dur à 428 alors que la grille de cabine en
+  // budgète 260 (--cabine-cercle) pour la dalle courte : au-delà de 520 px
+  // de haut, rien ne change ; en dessous, on retombe sur la valeur
+  // budgétée, faute de quoi le cercle chevauche la pastille pause/arrêt.
+  const compact = useCompactCabin();
+
   return (
     <section
       className="relative grid min-h-dvh place-items-center overflow-hidden px-6"
@@ -45,7 +52,11 @@ export function ExerciseScreen({
         type="button"
         onClick={() => setMusic((on) => !on)}
         aria-pressed={music}
-        className="glass glass-edge fixed left-6 top-6 z-20 inline-flex items-center gap-2 rounded-pill px-4 py-2.5 text-sm text-ink-soft transition-colors hover:text-ink sm:left-12 sm:top-10"
+        // Rembourrage porté à 3.5 (au lieu de 2.5) : la cible ne faisait
+        // qu'environ 40 px de haut, sous le seuil tactile de 44 — corrigé
+        // ici pour toutes les hauteurs d'écran, pas seulement en compact,
+        // puisque le défaut existait déjà sur les écrans hauts.
+        className="glass glass-edge fixed left-6 top-6 z-20 inline-flex items-center gap-2 rounded-pill px-4 py-3.5 text-sm text-ink-soft transition-colors hover:text-ink sm:left-12 sm:top-10"
       >
         <Music className="size-4" strokeWidth={1.7} aria-hidden />
         {music ? 'Musique' : 'Silence'}
@@ -55,12 +66,12 @@ export function ExerciseScreen({
         {clock(remaining)}
       </p>
 
-      <div className="-mt-10">
+      <div className="-mt-10 [@media(max-height:520px)]:-mt-3">
         <BreathingGuide
           exerciseId={exerciseId}
           durationMinutes={durationMinutes}
           onComplete={onComplete}
-          size={428}
+          size={compact ? 260 : 428}
         />
       </div>
 
