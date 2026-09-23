@@ -3,8 +3,14 @@ import { AIPresence } from '@/components/ai/presence';
 import type { ConnectionState, ConsentState, SensorFrame } from '@/api';
 import { CabinChrome, CabinProgress } from '../components/cabin-chrome';
 import { useCompactCabin } from '../hooks/use-compact-cabin';
+import { useFaceIndex } from '../hooks/use-face-index';
+import { useVoiceSample } from '../hooks/use-voice-sample';
 import { PrivacyToggles } from '../components/privacy-toggles';
 import { SensorStrip } from '../components/sensor-strip';
+
+/** La question posée à voix haute dure dix secondes : c'est la fenêtre sur
+ * laquelle la voix est enregistrée, une seule fois par séance. */
+const DUREE_REPONSE_S = 10;
 
 interface MeasureScreenProps {
   elapsedSeconds: number;
@@ -15,6 +21,8 @@ interface MeasureScreenProps {
   connection?: ConnectionState;
   /** La question posée par l'IA pendant qu'elle écoute. */
   question?: string;
+  /** Pour brancher les indices visage et voix sur la bonne séance. */
+  sessionId: string | null;
 }
 
 /**
@@ -26,6 +34,14 @@ interface MeasureScreenProps {
  *
  * Le filet de progression ne porte aucun chiffre. Savoir qu'il reste
  * vingt-trois secondes ne sert à personne ; savoir que ça avance, si.
+ *
+ * C'est aussi ici que les deux capteurs qui ne remontaient pas se branchent :
+ * l'indice facial (calculé localement, voir `useFaceIndex`) et l'échantillon
+ * de voix pris pendant que la question ci-dessus reste affichée (voir
+ * `useVoiceSample`). Les deux ne s'activent que si l'astronaute n'a pas coupé
+ * le capteur correspondant — le composant n'existe que pendant la phase de
+ * mesure, la condition de phase est donc déjà remplie par le simple fait que
+ * cet écran soit monté.
  */
 export function MeasureScreen({
   elapsedSeconds,
@@ -35,6 +51,7 @@ export function MeasureScreen({
   onToggleConsent,
   connection,
   question = 'Qu’est-ce que tu as fait aujourd’hui ?',
+  sessionId,
 }: MeasureScreenProps) {
   // Sur la dalle courte, le bandeau bas (pastilles + relevés) reste en
   // position fixe et mange 144 px du bas de l'écran : la sphère et la
@@ -44,6 +61,19 @@ export function MeasureScreen({
   // de tâche pour le calcul complet des deux zones et leur marge de non-
   // recouvrement.
   const compact = useCompactCabin();
+
+  const visage = useFaceIndex(sessionId, consent.camera);
+  const voix = useVoiceSample(sessionId, {
+    actif: consent.microphone,
+    dureeSecondes: DUREE_REPONSE_S,
+  });
+
+  // Le système annonce sa confiance réduite, il ne la cache pas : si un des
+  // deux capteurs part en erreur, l'écran le dit plutôt que de laisser
+  // croire que tout remonte normalement.
+  const alertes: string[] = [];
+  if (visage.erreur) alertes.push(`Visage indisponible (${visage.erreur})`);
+  if (voix.erreur) alertes.push(`Voix indisponible (${voix.erreur})`);
 
   return (
     <section className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6">
@@ -67,6 +97,15 @@ className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem
         >
           {question}
         </motion.h1>
+
+        {alertes.length > 0 && (
+          <p
+            role="status"
+            className="mt-3 max-w-[560px] text-center text-xs leading-4 text-watch [@media(max-height:520px)]:mt-1.5"
+          >
+            Confiance réduite — {alertes.join(' · ')}
+          </p>
+        )}
       </div>
 
       {/* Bas d'écran : pastilles, 41 px, bande de relevés, puis 46 px jusqu'au
