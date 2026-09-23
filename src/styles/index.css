@@ -41,6 +41,17 @@
 
   --ease-calm: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Grille de l'ecran de la cabine : 800 x 480 en paysage, tactile.
+     480 px de haut, c'est court : le budget vertical de l'ecran seance est
+     24 de marge, 260 pour le cercle, 36 pour le compte a rebours, 56 pour la
+     consigne, 24 de marge. Il reste 80 px de jeu, pas davantage. */
+  --cabine-w: 800px;
+  --cabine-h: 480px;
+  --cabine-marge: 24px;
+  --cabine-gouttiere: 16px;
+  --cabine-cible-min: 44px;   /* aucune cible tactile en dessous */
+  --cabine-cercle: 260px;
 }
 
 /* --------------------------------------------------------------------------
@@ -354,5 +365,19 @@ body {
   50% {
     opacity: 0.45;
     transform: scale(0.88);
+  }
+}
+
+/* L'ecran de la cabine est tactile : il n'y a pas de curseur, donc pas de
+   survol. Un etat :hover y reste colle apres un appui et ment sur l'etat
+   reel du bouton. */
+@media (pointer: coarse) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
   }
 }
