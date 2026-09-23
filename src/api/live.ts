@@ -37,6 +37,25 @@ function segment(value: string): string {
  * rythmes différents sans se casser.
  */
 export const liveTransport: Transport = {
+  sendFaceIndex(sessionId, indice) {
+    // `request` encode déjà le corps en JSON (voir http.ts) : lui passer une
+    // chaîne pré-sérialisée l'encoderait une seconde fois et casserait le
+    // parsing côté serveur.
+    return request<void>(`/sessions/${segment(sessionId)}/face`, {
+      method: 'POST',
+      body: indice,
+    });
+  },
+
+  sendVoiceSample(sessionId, wav) {
+    const corps = new FormData();
+    corps.append('fichier', wav, 'voix.wav');
+    return request<{ voiceIndex: number }>(`/sessions/${segment(sessionId)}/audio`, {
+      method: 'POST',
+      body: corps,
+    });
+  },
+
   getCurrentMember() {
     return request<CrewMember>(`/cabins/${segment(CABIN_ID)}/occupant`);
   },
