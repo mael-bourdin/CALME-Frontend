@@ -285,6 +285,15 @@ function createMockStream(sessionId: string): SessionStream {
    ------------------------------------------------------------------------- */
 
 export const mockTransport: Transport = {
+  async sendFaceIndex() {
+    /* Le transport simulé accepte et oublie : les écrans n'ont pas à savoir
+       lequel des deux transports ils utilisent. */
+  },
+
+  async sendVoiceSample() {
+    return { voiceIndex: 0.42 };
+  },
+
   getCurrentMember() {
     return delay(CREW.find((m) => m.id === OCCUPANT_ID) ?? CREW[0]);
   },

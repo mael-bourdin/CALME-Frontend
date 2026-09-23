@@ -5,6 +5,7 @@ import { AIPresence } from '@/components/ai/presence';
 import { Button } from '@/components/ui/button';
 import type { Assessment, Recommendation } from '@/api';
 import { CabinChrome } from '../components/cabin-chrome';
+import { useCompactCabin } from '../hooks/use-compact-cabin';
 
 interface ResultScreenProps {
   assessment: Assessment;
@@ -37,16 +38,22 @@ export function ResultScreen({ assessment, recommendation, onAccept }: ResultScr
   // suite sans attendre qu'une animation finisse de le livrer.
   const speech = useSpeech(sentence);
 
+  // Sur la dalle 800×480, 177 (marge) + 304 (sphère) dépassent déjà les 480
+  // disponibles avant même la phrase et le bouton. En dessous de 520 px de
+  // haut, la marge tombe à 24 (--cabine-marge) et la sphère à 160 : voir le
+  // rapport de tâche pour le budget vertical chiffré complet.
+  const compact = useCompactCabin();
+
   return (
     <section className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6">
       <CabinChrome position="top" />
 
       {/* Cotes de C3 : sphère de 304 posée à 177 du haut, la phrase juste
           dessous sur 722 de large, le bouton 45 px plus bas. */}
-      <div className="flex w-full flex-col items-center pt-[177px]">
+      <div className="flex w-full flex-col items-center pt-[177px] [@media(max-height:520px)]:pt-6">
         <AIPresence
           state={assessment.level === 'red' ? 'alert' : 'speaking'}
-          size={304}
+          size={compact ? 160 : 304}
           tint={tint}
           amplitude={speech.amplitude}
         />
@@ -65,7 +72,7 @@ className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-[45px] flex flex-col items-center gap-4"
+          className="mt-[45px] flex flex-col items-center gap-4 [@media(max-height:520px)]:mt-4"
         >
           <Button
             size="lg"

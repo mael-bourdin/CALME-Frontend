@@ -40,6 +40,23 @@ export interface ConsentState {
 }
 
 /**
+ * L'indice facial calculé dans le navigateur de la cabine.
+ *
+ * Seuls ces quatre nombres partent. L'image est analysée sur le poste et
+ * détruite image par image : la promesse « aucune image conservée » est vraie
+ * dans l'architecture, pas seulement dans la politique.
+ */
+export interface FaceIndex {
+  at: string;
+  /** Tension du visage, 0 à 1. */
+  tension: number;
+  /** Clignements par minute, sur une fenêtre glissante de 30 s. */
+  blinkRate: number;
+  /** Immobilité, 0 à 1. */
+  stillness: number;
+}
+
+/**
  * La surface complète du serveur de bord.
  *
  * Deux implémentations : `live` qui parle au FastAPI, `mock` qui simule tout en
@@ -48,6 +65,10 @@ export interface ConsentState {
  */
 export interface Transport {
   /* ---- Cabine ------------------------------------------------------------ */
+  /** Pousse l'indice facial calculé localement. Une fois par seconde. */
+  sendFaceIndex(sessionId: string, indice: FaceIndex): Promise<void>;
+  /** Pousse dix secondes de voix. La réponse ne contient que des indicateurs. */
+  sendVoiceSample(sessionId: string, wav: Blob): Promise<{ voiceIndex: number }>;
   getCurrentMember(): Promise<CrewMember>;
   getLastSessionAt(crewId: string): Promise<string | null>;
   openSession(crewId: string): Promise<Session>;

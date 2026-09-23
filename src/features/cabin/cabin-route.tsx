@@ -44,6 +44,7 @@ export function CabinRoute() {
             consent={session.consent}
             onToggleConsent={(key) => void session.toggleConsent(key)}
             connection={session.connection}
+            sessionId={session.sessionId}
           />
         )}
 

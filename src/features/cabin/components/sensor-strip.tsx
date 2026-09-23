@@ -48,6 +48,10 @@ export function SensorStrip({
       className={cn(
         'glass glass-edge flex w-full flex-wrap items-center justify-center gap-y-5 rounded-[24px] px-[33px] py-5',
         'sm:h-[91.5px] sm:flex-nowrap sm:py-0',
+        // Sous 520 px de haut, la bande reste posée en bas de l'écran mesure
+        // mais perd du gras : son contenu (une ligne de 53 px) tient large
+        // dans 72.
+        '[@media(max-height:520px)]:h-[72px]',
         className,
       )}
     >
