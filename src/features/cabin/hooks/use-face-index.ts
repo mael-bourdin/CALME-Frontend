@@ -30,6 +30,19 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
 
   useEffect(() => {
     if (!actif || !sessionId) return;
+
+    // Le hook est paramétré par sessionId et actif : il est conçu pour
+    // survivre à un changement de séance sans démontage. Sans cette remise à
+    // zéro, la fenêtre glissante de 30 s de la nouvelle séance démarrerait
+    // polluée par les mesures de la précédente, et un `pret`/`erreur` périmé
+    // s'afficherait le temps que le nouveau landmarker soit prêt.
+    setPret(false);
+    setErreur(null);
+    clignements.current = [];
+    yeuxFermes.current = false;
+    tensions.current = [];
+    matrices.current = [];
+
     let vivant = true;
     let flux: MediaStream | null = null;
     let landmarker: FaceLandmarker | null = null;
@@ -38,26 +51,46 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
 
     async function demarrer() {
       try {
-        flux = await navigator.mediaDevices.getUserMedia({
+        const fluxLocal = await navigator.mediaDevices.getUserMedia({
           video: { width: 320, height: 240, frameRate: FPS },
         });
+        if (!vivant) {
+          // Le nettoyage est déjà passé pendant l'attente de la caméra : à ce
+          // moment-là `flux` valait encore `null`, il n'a donc rien pu couper.
+          // Le flux vient tout juste d'être ouvert : si on ne l'éteint pas ici,
+          // le voyant de la webcam reste allumé après la fin de la séance —
+          // le pire défaut possible sur une cabine qui promet de ne pas filmer.
+          fluxLocal.getTracks().forEach((piste) => piste.stop());
+          return;
+        }
+        flux = fluxLocal;
+
         const video = document.createElement('video');
         video.srcObject = flux;
         video.muted = true;
         await video.play();
+        // `flux` est déjà assigné : si le démontage arrive ici, la fonction de
+        // nettoyage du useEffect sait maintenant le couper elle-même.
+        if (!vivant) return;
 
         // Le CDN jsDelivr n'est pas joignable à bord : le WASM est copié en
         // local dans public/wasm, servi comme n'importe quel autre asset statique.
         const fileset = await FilesetResolver.forVisionTasks('/wasm');
-        landmarker = await FaceLandmarker.createFromOptions(fileset, {
+        const landmarkerLocal = await FaceLandmarker.createFromOptions(fileset, {
           baseOptions: { modelAssetPath: '/models/face_landmarker.task' },
           outputFaceBlendshapes: true,
           outputFacialTransformationMatrixes: true,
           runningMode: 'VIDEO',
           numFaces: 1,
         });
-
-        if (!vivant) return;
+        if (!vivant) {
+          // Même raisonnement que pour la caméra : le landmarker vient d'être
+          // créé, la fonction de nettoyage ne le connaît pas encore et ne peut
+          // donc pas le fermer à notre place.
+          landmarkerLocal.close();
+          return;
+        }
+        landmarker = landmarkerLocal;
         setPret(true);
 
         timerAnalyse = window.setInterval(() => {

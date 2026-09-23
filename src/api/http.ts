@@ -41,13 +41,20 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   if (signal) signal.addEventListener('abort', () => controller.abort(), { once: true });
 
+  // Un FormData porte sa propre frontière multipart, que fetch calcule et pose
+  // lui-même dans l'en-tête content-type. Le sérialiser en JSON le viderait
+  // (aucune propriété énumérable : JSON.stringify(new FormData()) vaut "{}")
+  // et lui imposer notre en-tête cassait l'envoi du fichier — donc il passe
+  // tel quel, sans JSON.stringify ni en-tête forcé.
+  const estFormData = body instanceof FormData;
+
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       signal: controller.signal,
-      headers: body ? { 'content-type': 'application/json' } : undefined,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: body && !estFormData ? { 'content-type': 'application/json' } : undefined,
+      body: body === undefined ? undefined : estFormData ? body : JSON.stringify(body),
     });
   } catch (cause) {
     throw ApiError.unreachable(cause);
