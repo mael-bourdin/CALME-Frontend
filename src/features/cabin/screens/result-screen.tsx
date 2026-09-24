@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import type { Assessment, Recommendation } from '@/api';
 import { CabinChrome } from '../components/cabin-chrome';
 import { useCompactCabin } from '../hooks/use-compact-cabin';
+import { useParole } from '../hooks/use-parole';
 
 interface ResultScreenProps {
   assessment: Assessment;
@@ -37,6 +38,11 @@ export function ResultScreen({ assessment, recommendation, onAccept }: ResultScr
   // s'affiche d'un coup : c'est un résultat, on doit pouvoir le relire tout de
   // suite sans attendre qu'une animation finisse de le livrer.
   const speech = useSpeech(sentence);
+  // La consigne aussi se dit à voix haute — même cascade que la question de
+  // la mesure, indépendante de l'amplitude simulée ci-dessus qui anime la
+  // sphère : l'une pilote un dessin, l'autre un son, elles n'ont pas besoin
+  // de dépendre l'une de l'autre pour rester cohérentes à l'écran.
+  useParole(sentence, assessment.sessionId);
 
   // Sur la dalle 800×480, 177 (marge) + 304 (sphère) dépassent déjà les 480
   // disponibles avant même la phrase et le bouton. En dessous de 520 px de

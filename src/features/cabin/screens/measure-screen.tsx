@@ -4,6 +4,7 @@ import type { ConnectionState, ConsentState, SensorFrame } from '@/api';
 import { CabinChrome, CabinProgress } from '../components/cabin-chrome';
 import { useCompactCabin } from '../hooks/use-compact-cabin';
 import { useFaceIndex } from '../hooks/use-face-index';
+import { useParole } from '../hooks/use-parole';
 import { useVoiceSample } from '../hooks/use-voice-sample';
 import { PrivacyToggles } from '../components/privacy-toggles';
 import { SensorStrip } from '../components/sensor-strip';
@@ -67,6 +68,9 @@ export function MeasureScreen({
     actif: consent.microphone,
     dureeSecondes: DUREE_REPONSE_S,
   });
+  // La cabine pose la question à voix haute : serveur, puis navigateur, puis
+  // silence si les deux manquent — voir `use-parole.ts` pour la cascade.
+  useParole(question, sessionId);
 
   // Le système annonce sa confiance réduite, il ne la cache pas : si un des
   // deux capteurs part en erreur, l'écran le dit plutôt que de laisser
