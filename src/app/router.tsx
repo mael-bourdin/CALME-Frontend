@@ -36,6 +36,7 @@ export const router = createBrowserRouter([
       // route existe encore, le dock n'y mène pas.
       { path: 'tendances', element: <TrendsScreen /> },
       { path: 'energie', element: <PowerScreen /> },
+      { path: 'membre', element: <MemberScreen /> },
       { path: 'membre/:crewId', element: <MemberScreen /> },
     ],
   },

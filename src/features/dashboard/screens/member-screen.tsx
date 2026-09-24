@@ -27,8 +27,14 @@ const FEEDBACK_LABEL = {
  * de la personne, et l'ouverture est journalisée.
  */
 export function MemberScreen() {
-  const { crewId = 'ana' } = useParams();
-  const history = useAsync(() => api.getCrewHistory(crewId), [crewId]);
+  const { crewId } = useParams();
+  // Sans identifiant dans l'adresse (entrée par le dock), on ouvre le premier
+  // membre réellement enrôlé plutôt qu'un identifiant de démonstration.
+  const history = useAsync(async () => {
+    const id = crewId ?? (await api.getCrewOverview())[0]?.member.id;
+    if (!id) throw new Error('Aucun membre d’équipage enrôlé pour l’instant.');
+    return api.getCrewHistory(id);
+  }, [crewId]);
 
   if (history.loading) {
     return <p className="py-16 text-center text-ink-faint">Ouverture du dossier…</p>;

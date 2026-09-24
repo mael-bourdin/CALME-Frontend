@@ -7,11 +7,15 @@ import { BreathingGuide, useExerciseProgress } from '../components/breathing-gui
 import { CabinChrome, CabinProgress } from '../components/cabin-chrome';
 import { VoiceGuide } from '../components/voice-guide';
 import { useCompactCabin } from '../hooks/use-compact-cabin';
+import { useFaceIndex } from '../hooks/use-face-index';
 import { CREDITS_MUSIQUE, INTRO_RESPIRATION, RESPIRATIONS, SCRIPTS } from '../lib/exercices-guides';
 
 interface ExerciseScreenProps {
   exercise: Exercise;
   onComplete: () => void;
+  /** Pour mesurer le visage pendant l'exercice : c'est la note de fin. */
+  sessionId?: string | null;
+  consentCamera?: boolean;
 }
 
 function clock(seconds: number): string {
@@ -32,9 +36,17 @@ function clock(seconds: number): string {
  * son heure). La musique, quand l'exercice en a une, joue dessous et baisse
  * d'elle-même pendant que Lila parle.
  */
-export function ExerciseScreen({ exercise, onComplete }: ExerciseScreenProps) {
+export function ExerciseScreen({
+  exercise,
+  onComplete,
+  sessionId = null,
+  consentCamera = false,
+}: ExerciseScreenProps) {
   const [music, setMusic] = useState(true);
   const [paused, setPaused] = useState(false);
+  // Le visage continue d'être mesuré pendant l'exercice (hors pause) : la
+  // note de fin se calcule sur cette période, pas sur la mesure d'avant.
+  useFaceIndex(sessionId, consentCamera && !paused);
   const progress = useExerciseProgress(exercise.duration, paused);
   const remaining = exercise.duration * 60 * (1 - progress);
   const compact = useCompactCabin();

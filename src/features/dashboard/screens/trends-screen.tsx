@@ -27,6 +27,11 @@ export function TrendsScreen() {
       </header>
 
       {trends.loading && <p className="py-10 text-center text-ink-faint">Agrégation…</p>}
+      {trends.error && (
+        <p role="alert" className="py-10 text-center text-alert">
+          Tendances indisponibles : {trends.error}
+        </p>
+      )}
 
       {trends.data && (
         <>
@@ -67,8 +72,16 @@ export function TrendsScreen() {
               tone="text-calm"
             />
             <Figure
-              value={trends.data.breathingRateAfter.toLocaleString('fr-FR')}
-              caption={`cycles par minute après séance, contre ${trends.data.breathingRateBefore.toLocaleString('fr-FR')} avant`}
+              value={
+                trends.data.breathingRateAfter
+                  ? trends.data.breathingRateAfter.toLocaleString('fr-FR')
+                  : '—'
+              }
+              caption={
+                trends.data.breathingRateAfter
+                  ? `cycles par minute après séance, contre ${trends.data.breathingRateBefore.toLocaleString('fr-FR')} avant`
+                  : 'pas encore mesurée (capteur cardiaque absent)'
+              }
               tone="text-calm"
             />
             <Figure

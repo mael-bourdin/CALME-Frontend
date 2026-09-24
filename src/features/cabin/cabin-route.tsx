@@ -65,6 +65,8 @@ export function CabinRoute() {
           <ExerciseScreen
             exercise={session.recommendation.exercise}
             onComplete={() => void session.finishExercise()}
+            sessionId={session.sessionId}
+            consentCamera={session.consent.camera}
           />
         )}
 

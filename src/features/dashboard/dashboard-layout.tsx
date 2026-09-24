@@ -23,7 +23,7 @@ export function DashboardLayout() {
     { to: '/medecin/alertes', label: 'Alertes', icon: 'alerts', badge: pending },
     { to: '/medecin/capteurs', label: 'Capteurs', icon: 'trends' },
     { to: '/medecin/energie', label: 'Énergie', icon: 'power' },
-    { to: '/medecin/membre/ana', label: 'Membre', icon: 'member' },
+    { to: '/medecin/membre', label: 'Membre', icon: 'member' },
   ];
 
   return (
@@ -58,8 +58,6 @@ export function DashboardLayout() {
       </AnimatePresence>
 
       <Dock items={items} />
-
-
     </div>
   );
 }

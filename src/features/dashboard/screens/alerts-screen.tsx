@@ -30,6 +30,11 @@ export function AlertsScreen() {
   return (
     <div className="space-y-5">
       {alerts.loading && <p className="py-10 text-center text-ink-faint">Lecture des alertes…</p>}
+      {alerts.error && (
+        <p role="alert" className="py-10 text-center text-alert">
+          Alertes indisponibles : {alerts.error}
+        </p>
+      )}
 
       {open.map((alert) => (
         <AlertBanner
@@ -42,7 +47,7 @@ export function AlertsScreen() {
         />
       ))}
 
-      {open.length === 0 && !alerts.loading && (
+      {open.length === 0 && !alerts.loading && !alerts.error && (
         <GlassPanel density="thin" className="px-6 py-7 text-center">
           <p className="text-ink-soft">Rien à traiter. Tout l’équipage est sous le seuil.</p>
         </GlassPanel>

@@ -79,7 +79,7 @@
 
   --c-ink: #0a0e1a;
   --c-ink-soft: #4a5468;
-  --c-ink-faint: #838da3;
+  --c-ink-faint: #525d75; /* 5,1:1 sur le fond clair, au lieu de 2,6:1 */
 
   --c-calm: #0e9f8f;
   --c-watch: #b8730a;
@@ -123,7 +123,7 @@
 
   --c-ink: #e8eef9;
   --c-ink-soft: #9fb0c9;
-  --c-ink-faint: #5d708c;
+  --c-ink-faint: #8394ad; /* 6,1:1 sur le fond sombre, au lieu de 3,9:1 */
 
   --c-calm: #4fd1c5;
   --c-watch: #f0b429;

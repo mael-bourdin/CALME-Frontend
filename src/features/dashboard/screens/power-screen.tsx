@@ -54,6 +54,12 @@ export function PowerScreen() {
     <div className="space-y-6">
       {power.loading && <p className="py-10 text-center text-ink-faint">Lecture du capteur…</p>}
 
+      {power.loading && <p className="py-10 text-center text-ink-faint">Lecture du budget…</p>}
+      {power.error && (
+        <p role="alert" className="py-10 text-center text-alert">
+          Budget d’énergie indisponible : {power.error}
+        </p>
+      )}
       {power.data && (
         <>
           <GlassPanel density="thick" className="grid grid-cols-2 gap-6 p-6 sm:p-8 lg:grid-cols-4">

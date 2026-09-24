@@ -55,9 +55,17 @@ const VOLUME_MUSIQUE_SOUS_VOIX = 0.15;
 let gainMusique: GainNode | null = null;
 let voixEnCours = 0;
 
+/** Le lecteur YouTube en cours, s'il y en a un : son volume suit la voix
+ * comme celui de la piste locale (0 à 100 chez YouTube). */
+let lecteurYoutube: YoutubePlayer | null = null;
+const VOLUME_YOUTUBE = 100;
+const VOLUME_YOUTUBE_SOUS_VOIX = 35;
+
 function ajusterMusique(): void {
+  const sousVoix = voixEnCours > 0;
+  lecteurYoutube?.setVolume(sousVoix ? VOLUME_YOUTUBE_SOUS_VOIX : VOLUME_YOUTUBE);
   if (!gainMusique || !contexte) return;
-  const cible = voixEnCours > 0 ? VOLUME_MUSIQUE_SOUS_VOIX : VOLUME_MUSIQUE;
+  const cible = sousVoix ? VOLUME_MUSIQUE_SOUS_VOIX : VOLUME_MUSIQUE;
   gainMusique.gain.setTargetAtTime(cible, contexte.currentTime, 0.25);
 }
 
@@ -73,6 +81,11 @@ export interface Musique {
  * musique peut baisser pendant que Lila parle.
  */
 export function jouerMusique(url: string): Musique {
+  if (url.startsWith('youtube:')) return jouerYoutube(url.slice('youtube:'.length));
+  return jouerPiste(url);
+}
+
+function jouerPiste(url: string): Musique {
   const ctx = contexteAudio();
   void ctx.resume().catch(() => undefined);
   const element = new Audio(url);
@@ -98,6 +111,136 @@ export function jouerMusique(url: string): Musique {
         gain.disconnect();
       }, 1200);
       if (gainMusique === gain) gainMusique = null;
+    },
+  };
+}
+
+/* ---- Musique lue depuis YouTube ----------------------------------------- */
+
+/**
+ * Certaines musiques ne sont pas libres de droits : on ne les copie pas, on
+ * les lit avec le lecteur intégré officiel de YouTube (autorisé par l'auteur,
+ * `playableInEmbed`). Il faut donc Internet ; sans réponse de YouTube en
+ * quelques secondes, la piste libre embarquée prend le relais.
+ */
+
+interface YoutubePlayer {
+  playVideo(): void;
+  pauseVideo(): void;
+  stopVideo(): void;
+  setVolume(volume: number): void;
+  destroy(): void;
+}
+
+interface YoutubeApi {
+  Player: new (
+    element: HTMLElement,
+    options: {
+      videoId: string;
+      width?: number;
+      height?: number;
+      playerVars?: Record<string, number>;
+      events?: { onReady?: () => void; onError?: () => void };
+    },
+  ) => YoutubePlayer;
+}
+
+declare global {
+  interface Window {
+    YT?: YoutubeApi;
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+const PISTE_DE_SECOURS = '/audio/respiration-carree-80bpm.ogg';
+const DELAI_YOUTUBE_MS = 8000;
+
+let apiYoutube: Promise<YoutubeApi> | null = null;
+
+function chargerApiYoutube(): Promise<YoutubeApi> {
+  if (window.YT?.Player) return Promise.resolve(window.YT);
+  apiYoutube ??= new Promise<YoutubeApi>((resolve, reject) => {
+    const precedent = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      precedent?.();
+      if (window.YT) resolve(window.YT);
+    };
+    const script = document.createElement('script');
+    script.src = 'https://www.youtube.com/iframe_api';
+    script.onerror = () => {
+      apiYoutube = null;
+      reject(new Error('YouTube injoignable'));
+    };
+    document.head.appendChild(script);
+  });
+  return apiYoutube;
+}
+
+function jouerYoutube(videoId: string): Musique {
+  let arrete = false;
+  let enPause = false;
+  let joueur: YoutubePlayer | null = null;
+  let secours: Musique | null = null;
+  // Le lecteur est une iframe : on la garde hors de la vue, elle ne sert
+  // qu'au son.
+  const hote = document.createElement('div');
+  hote.style.cssText =
+    'position:fixed;width:1px;height:1px;left:-10px;top:-10px;opacity:0;pointer-events:none';
+  const cible = document.createElement('div');
+  hote.appendChild(cible);
+  document.body.appendChild(hote);
+
+  const passerAuSecours = () => {
+    if (arrete || secours) return;
+    joueur?.destroy();
+    joueur = null;
+    if (lecteurYoutube) lecteurYoutube = null;
+    secours = jouerPiste(PISTE_DE_SECOURS);
+    if (enPause) secours.pause();
+  };
+  const minuteur = window.setTimeout(passerAuSecours, DELAI_YOUTUBE_MS);
+
+  chargerApiYoutube()
+    .then((YT) => {
+      if (arrete || secours) return;
+      joueur = new YT.Player(cible, {
+        videoId,
+        width: 1,
+        height: 1,
+        playerVars: { autoplay: 1, controls: 0, disablekb: 1, playsinline: 1, rel: 0 },
+        events: {
+          onReady: () => {
+            if (arrete || secours || !joueur) return;
+            window.clearTimeout(minuteur);
+            lecteurYoutube = joueur;
+            ajusterMusique();
+            if (!enPause) joueur.playVideo();
+          },
+          onError: passerAuSecours,
+        },
+      });
+    })
+    .catch(passerAuSecours);
+
+  return {
+    pause: () => {
+      enPause = true;
+      joueur?.pauseVideo();
+      secours?.pause();
+    },
+    reprendre: () => {
+      enPause = false;
+      joueur?.playVideo();
+      secours?.reprendre();
+    },
+    arreter: () => {
+      arrete = true;
+      window.clearTimeout(minuteur);
+      if (lecteurYoutube === joueur) lecteurYoutube = null;
+      joueur?.stopVideo();
+      joueur?.destroy();
+      secours?.arreter();
+      hote.remove();
     },
   };
 }

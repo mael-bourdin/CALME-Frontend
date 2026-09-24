@@ -117,7 +117,7 @@ export const EXERCISES: Exercise[] = [
     indication: 'Visage crispé : sourcils froncés, mâchoire serrée',
     minLevel: 'green',
     kind: 'relaxation',
-    music: '/audio/respiration-carree-80bpm.ogg',
+    music: 'youtube:RzYIQMYjao4',
     signals: ['visage'],
   },
   {
@@ -127,7 +127,7 @@ export const EXERCISES: Exercise[] = [
     indication: 'Corps tendu, sudation de fond et visage crispés',
     minLevel: 'amber',
     kind: 'relaxation',
-    music: '/audio/respiration-carree-80bpm.ogg',
+    music: 'youtube:RzYIQMYjao4',
     signals: ['eda_fond', 'visage'],
   },
   {
@@ -137,7 +137,7 @@ export const EXERCISES: Exercise[] = [
     indication: 'Charge modérée, sans signal dominant',
     minLevel: 'green',
     kind: 'relaxation',
-    music: '/audio/respiration-carree-80bpm.ogg',
+    music: 'youtube:RzYIQMYjao4',
     signals: ['diffus'],
   },
   {
@@ -167,7 +167,7 @@ export const EXERCISES: Exercise[] = [
     indication: "Lassitude, voix éteinte, besoin d'évasion",
     minLevel: 'green',
     kind: 'relaxation',
-    music: '/audio/respiration-carree-80bpm.ogg',
+    music: 'youtube:RzYIQMYjao4',
     signals: ['fatigue', 'diffus'],
   },
   {
@@ -177,7 +177,7 @@ export const EXERCISES: Exercise[] = [
     indication: 'Charge modérée, descente progressive',
     minLevel: 'green',
     kind: 'audio',
-    music: '/audio/respiration-carree-80bpm.ogg',
+    music: 'youtube:RzYIQMYjao4',
     signals: ['diffus'],
   },
   {
@@ -187,7 +187,7 @@ export const EXERCISES: Exercise[] = [
     indication: 'Désynchronisation, baisse de vigilance',
     minLevel: 'green',
     kind: 'light',
-    music: '/audio/respiration-carree-80bpm.ogg',
+    music: 'youtube:RzYIQMYjao4',
     signals: ['fatigue'],
   },
   {
@@ -197,7 +197,7 @@ export const EXERCISES: Exercise[] = [
     indication: 'Fatigue accumulée',
     minLevel: 'amber',
     kind: 'nap',
-    music: '/audio/respiration-carree-80bpm.ogg',
+    music: 'youtube:RzYIQMYjao4',
     signals: ['fatigue'],
   },
   {

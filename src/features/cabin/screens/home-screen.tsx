@@ -10,6 +10,7 @@ import { direTexte } from '../audio/lecteur';
 import { CabinChrome } from '../components/cabin-chrome';
 import { useCompactCabin } from '../hooks/use-compact-cabin';
 import { useParole } from '../hooks/use-parole';
+import { phraseDerniereSeance } from '../lib/derniere-seance';
 import { IdentificationFlow } from '../components/identification-flow';
 
 interface HomeScreenProps {
@@ -89,13 +90,8 @@ export function HomeScreen({
   const identifie = firstName !== '';
 
   // L'accueil se dit aussi à voix haute, dès que la personne est identifiée.
-  const bonsoir = identifie
-    ? `Bonsoir ${firstName}. ${
-        lastSessionAt
-          ? `Ta dernière séance remonte à ${lastSessionAt}.`
-          : 'Première séance. Assieds-toi et pose la main sur l’accoudoir.'
-      }`
-    : null;
+  const derniereSeance = phraseDerniereSeance(lastSessionAt);
+  const bonsoir = identifie ? `Bonsoir ${firstName}. ${derniereSeance}` : null;
   useParole(greeting ? null : bonsoir, `accueil-${firstName}`);
 
   // La phrase d'ouverture, prononcée pendant qu'elle se révèle.
@@ -191,9 +187,7 @@ export function HomeScreen({
               </h1>
 
               <p className="mt-[30px] max-w-md text-balance text-[1.125rem] leading-7 text-ink-soft">
-                {lastSessionAt
-                  ? `Ta dernière séance remonte à ${lastSessionAt}.`
-                  : 'Première séance. Assieds-toi et pose la main sur l’accoudoir.'}
+                {derniereSeance}
               </p>
 
               <Button

@@ -206,6 +206,7 @@ export const SCRIPTS: Record<string, Replique[]> = {
 
 /** Crédits obligatoires des pistes sous licence Creative Commons BY. */
 export const CREDITS_MUSIQUE: Record<string, string> = {
+  'youtube:RzYIQMYjao4': 'Musique : « Winter Aurora », SleepTube — lue depuis YouTube',
   '/audio/respiration-carree-80bpm.ogg':
     'Musique : « Box Breathing & Binaural Beats », Breathwork Beats by Touek — CC BY',
 };
