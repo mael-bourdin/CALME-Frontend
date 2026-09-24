@@ -74,7 +74,13 @@ export function ResultScreen({ assessment, recommendation, onAccept }: ResultScr
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem,3.5vw,50.41px)] leading-[1.322] tracking-[-0.018em]"
+          className={`mt-2 w-[min(722px,100%)] text-balance text-center font-display leading-[1.322] tracking-[-0.018em] ${
+            sentence.length > 160
+              ? 'text-[clamp(1.2rem,2.2vw,2rem)]'
+              : sentence.length > 80
+                ? 'text-[clamp(1.4rem,2.8vw,2.5rem)]'
+                : 'text-[clamp(1.75rem,3.5vw,50.41px)]'
+          }`}
         >
           {sentence}
         </motion.h1>
