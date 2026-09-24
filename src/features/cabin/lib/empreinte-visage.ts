@@ -61,6 +61,19 @@ export async function localiserVisage(
   return { x, y, width, height };
 }
 
+const OPTIONS_EMPREINTE = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 });
+
+/** Écarte les images ratées (tête tournée, flou) : un descripteur trop loin
+ * du centre des autres fausserait la moyenne. */
+function sansAberrants(descripteurs: Float32Array[]): Float32Array[] {
+  if (descripteurs.length < 3) return descripteurs;
+  const centre = moyenne(descripteurs);
+  const distance = (d: Float32Array) =>
+    Math.sqrt(d.reduce((somme, v, i) => somme + (v - centre[i]) ** 2, 0));
+  const gardes = descripteurs.filter((d) => distance(d) < 0.35);
+  return gardes.length >= 2 ? gardes : descripteurs;
+}
+
 export type ResultatEmpreinte = { ok: true; empreinte: number[] } | { ok: false; raison: string };
 
 let chargement: Promise<void> | null = null;
@@ -71,6 +84,10 @@ function chargerModeles(): Promise<void> {
   if (!chargement) {
     chargement = Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(DOSSIER_MODELES),
+      // SSD MobileNet : plus lent que le tiny mais bien plus sûr sur un visage
+      // petit ou éloigné (caméra grand angle posée loin). Sert à l'empreinte ;
+      // le tiny garde le recadrage de l'indice facial, où la vitesse compte.
+      faceapi.nets.ssdMobilenetv1.loadFromUri(DOSSIER_MODELES),
       faceapi.nets.faceLandmark68Net.loadFromUri(DOSSIER_MODELES),
       faceapi.nets.faceRecognitionNet.loadFromUri(DOSSIER_MODELES),
     ]).then(() => undefined);
@@ -133,7 +150,7 @@ export async function capturerEmpreinteDetaillee(echantillons = 3): Promise<Resu
         // pilote de la caméra) ne doit pas interrompre toute la fenêtre
         // d'essai : on retente à l'image suivante.
         const resultat = await faceapi
-          .detectSingleFace(video, OPTIONS_DETECTEUR)
+          .detectSingleFace(video, OPTIONS_EMPREINTE)
           .withFaceLandmarks()
           .withFaceDescriptor();
         if (resultat) descripteurs.push(resultat.descriptor);
@@ -146,7 +163,7 @@ export async function capturerEmpreinteDetaillee(echantillons = 3): Promise<Resu
     if (descripteurs.length === 0) {
       return { ok: false, raison: 'visage non détecté — place-toi face à la caméra, bien éclairé' };
     }
-    return { ok: true, empreinte: moyenne(descripteurs) };
+    return { ok: true, empreinte: moyenne(sansAberrants(descripteurs)) };
   } catch (e) {
     return { ok: false, raison: messageErreurCamera(e) };
   } finally {

@@ -16,9 +16,10 @@ interface ClosingScreenProps {
 /** Le palier d'un indice, pour teinter les deux chiffres de la clôture. */
 function toneFor(value: number | null): string {
   if (value === null) return 'text-ink-faint';
-  if (value >= 70) return 'text-alert';
-  if (value >= 40) return 'text-watch';
-  return 'text-calm';
+  // Note de bien-être sur 100 (100 = le mieux) : vert dès 60, rouge sous 35.
+  if (value >= 60) return 'text-calm';
+  if (value >= 35) return 'text-watch';
+  return 'text-alert';
 }
 
 function Figure({ label, value, delay }: { label: string; value: number | null; delay: number }) {

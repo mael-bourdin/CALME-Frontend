@@ -12,7 +12,15 @@ interface ResultatIdentification {
   /** Pourquoi personne n'a été reconnu, quand on le sait : caméra occupée,
    * visage non vu, personne ne correspond. */
   raison?: string;
+  /** L'empreinte prise quand personne ne correspondait : si la personne
+   * choisit ensuite son nom dans la liste, elle rejoint ses références. */
+  empreinte?: number[];
 }
+
+/** Tant que la liste est affichée, la cabine réessaie seule : il suffit de se
+ * placer face à la caméra, sans toucher « Réessayer ». */
+const NOUVEL_ESSAI_MS = 5000;
+const ESSAIS_AUTOMATIQUES = 8;
 
 /**
  * La seule tentative de reconnaissance faciale de la séance, lancée à
@@ -51,7 +59,7 @@ export function useFaceRecognition(
         return;
       }
 
-      const capture = await capturerEmpreinteDetaillee(3);
+      const capture = await capturerEmpreinteDetaillee(5);
       if (!vivant) return;
       if (!capture.ok) {
         setResultat({ statut: 'echec', membre: null, raison: capture.raison });
@@ -65,7 +73,12 @@ export function useFaceRecognition(
         setResultat(
           membre
             ? { statut: 'reconnu', membre }
-            : { statut: 'echec', membre: null, raison: 'visage vu, mais personne ne correspond' },
+            : {
+                statut: 'echec',
+                membre: null,
+                raison: 'visage vu, mais personne ne correspond',
+                empreinte,
+              },
         );
       } catch {
         // Serveur injoignable ou route pas encore branchée : le repli est le
@@ -80,6 +93,16 @@ export function useFaceRecognition(
       vivant = false;
     };
   }, [consentCamera, essai]);
+
+  // Nouvel essai automatique après un échec, tant que la caméra est ouverte
+  // à la reconnaissance (pas quand elle est coupée ou occupée ailleurs).
+  useEffect(() => {
+    if (resultat.statut !== 'echec' || !consentCamera) return;
+    if (essai >= ESSAIS_AUTOMATIQUES || /occupée|refusé|aucune caméra/.test(resultat.raison ?? ''))
+      return;
+    const id = window.setTimeout(() => setEssai((n) => n + 1), NOUVEL_ESSAI_MS);
+    return () => window.clearTimeout(id);
+  }, [resultat, consentCamera, essai]);
 
   return { ...resultat, reessayer };
 }

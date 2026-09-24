@@ -348,6 +348,10 @@ export const mockTransport: Transport = {
     return delay(state.crew.map((m) => ({ ...m })));
   },
 
+  async addFaceReference() {
+    /* La simulation n'apprend pas de visages. */
+  },
+
   identifyCrewMember(empreinte) {
     // Le mock ne voit jamais de vraie image : sans empreinte enrôlée dans
     // cette même exécution, personne ne peut correspondre — exactement ce

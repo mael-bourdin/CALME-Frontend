@@ -94,6 +94,9 @@ export interface Transport {
    * c'est le résultat normal d'une personne pas encore enrôlée.
    */
   identifyCrewMember(empreinte: number[]): Promise<CrewMember | null>;
+  /** Ajoute une empreinte de référence à un membre déjà enrôlé (la cabine
+   * apprend son visage sous un autre éclairage). */
+  addFaceReference(crewId: string, empreinte: number[]): Promise<void>;
   /** Enrôle un nouveau membre d'équipage avec sa première empreinte faciale. */
   enrollCrewMember(displayName: string, empreinte: number[]): Promise<CrewMember>;
   openSession(crewId: string): Promise<Session>;

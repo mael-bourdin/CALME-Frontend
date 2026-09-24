@@ -37,6 +37,8 @@ export function IdentificationFlow({ consentCamera, onIdentified }: Identificati
   onIdentifiedRef.current = onIdentified;
 
   const [etape, setEtape] = useState<Etape>('liste');
+  const dejaEchoue = useRef(false);
+  if (recherche.statut === 'echec') dejaEchoue.current = true;
   const [equipe, setEquipe] = useState<CrewMember[]>([]);
   const [chargementEquipe, setChargementEquipe] = useState(false);
   const [prenom, setPrenom] = useState('');
@@ -118,7 +120,9 @@ export function IdentificationFlow({ consentCamera, onIdentified }: Identificati
 
   // Recherche en cours, ou déjà réussie (le parent va démonter ce composant
   // d'un instant à l'autre) : rien à montrer d'autre que ce discret repère.
-  if (recherche.statut !== 'echec') {
+  // Après un premier échec, la liste reste affichée pendant les nouveaux
+  // essais automatiques : sinon elle disparaissait toutes les cinq secondes.
+  if (recherche.statut !== 'echec' && !dejaEchoue.current) {
     return <p className="text-sm text-ink-faint">Je regarde qui est là…</p>;
   }
 
@@ -167,7 +171,10 @@ export function IdentificationFlow({ consentCamera, onIdentified }: Identificati
 
   return (
     <div className="flex w-full flex-col items-center gap-3 [@media(max-height:520px)]:gap-1.5">
-      {recherche.raison && consentCamera && (
+      {recherche.statut === 'recherche' && (
+        <p className="text-xs text-ink-faint">Je regarde à nouveau…</p>
+      )}
+      {recherche.statut === 'echec' && recherche.raison && consentCamera && (
         <p role="status" className="flex items-center gap-3 text-xs text-ink-faint">
           <span>{recherche.raison.charAt(0).toUpperCase() + recherche.raison.slice(1)}.</span>
           <button
@@ -182,7 +189,14 @@ export function IdentificationFlow({ consentCamera, onIdentified }: Identificati
       <CrewPicker
         crew={equipe}
         loading={chargementEquipe}
-        onSelect={(membre) => onIdentifiedRef.current(membre)}
+        onSelect={(membre) => {
+          // Pas reconnu, mais c'est bien elle : son visage du jour améliore
+          // la prochaine reconnaissance.
+          if (recherche.empreinte) {
+            void api.addFaceReference(membre.id, recherche.empreinte).catch(() => undefined);
+          }
+          onIdentifiedRef.current(membre);
+        }}
         onNew={() => setEtape('clavier')}
       />
     </div>

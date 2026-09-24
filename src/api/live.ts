@@ -83,6 +83,10 @@ export const liveTransport: Transport = {
     return request<CrewMember[]>('/crew');
   },
 
+  async addFaceReference(crewId, empreinte) {
+    await request(`/crew/${segment(crewId)}/empreintes`, { method: 'POST', body: { empreinte } });
+  },
+
   identifyCrewMember(empreinte) {
     return request<CrewMember | null>(`/cabins/${segment(CABIN_ID)}/identify`, {
       method: 'POST',
