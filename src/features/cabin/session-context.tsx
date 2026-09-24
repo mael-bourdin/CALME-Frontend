@@ -142,7 +142,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       stream.subscribe((event) => {
         switch (event.type) {
           case 'frame':
-            setFrame(event.payload);
+            setFrame((prev) => {
+              const p = event.payload;
+              if (!prev) return p;
+              return {
+                at: p.at ?? prev.at,
+                heartRate: p.heartRate ?? prev.heartRate,
+                skinConductance: p.skinConductance ?? prev.skinConductance,
+                faceTension: p.faceTension ?? prev.faceTension,
+                voiceIndex: p.voiceIndex ?? prev.voiceIndex,
+                suspect: p.suspect,
+              };
+            });
             break;
           case 'progress':
             setElapsed(event.payload.elapsedSeconds);
