@@ -169,7 +169,7 @@ export function IdentificationFlow({ consentCamera, onIdentified }: Identificati
     <div className="flex w-full flex-col items-center gap-3 [@media(max-height:520px)]:gap-1.5">
       {recherche.raison && consentCamera && (
         <p role="status" className="flex items-center gap-3 text-xs text-ink-faint">
-          <span>Je ne t’ai pas reconnu : {recherche.raison}.</span>
+          <span>{recherche.raison.charAt(0).toUpperCase() + recherche.raison.slice(1)}.</span>
           <button
             type="button"
             className="min-h-11 rounded-full px-3 text-xs font-medium text-ink underline underline-offset-4"

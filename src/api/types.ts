@@ -107,8 +107,21 @@ export interface Assessment {
   indicators: Indicators;
   /** La moyenne habituelle de la personne, pour situer l'indice. */
   personalBaseline: number | null;
+  /** Absent des évaluations antérieures à son introduction. */
+  dominantSignal?: DominantSignal;
   computedAt: string;
 }
+
+/** Ce que la mesure a vu d'abord, et qui oriente le choix de l'exercice. */
+export type DominantSignal =
+  | 'fc_moyenne'
+  | 'hrv_rmssd'
+  | 'eda_reponses'
+  | 'eda_fond'
+  | 'visage'
+  | 'voix'
+  | 'fatigue'
+  | 'diffus';
 
 export interface Exercise {
   id: string;
@@ -119,7 +132,12 @@ export interface Exercise {
   indication: string;
   /** Le palier minimal qui l'autorise. */
   minLevel: Level;
-  kind: 'breathing' | 'grounding' | 'audio' | 'light' | 'nap' | 'journal';
+  kind:
+    'breathing' | 'grounding' | 'audio' | 'light' | 'nap' | 'journal' | 'relaxation' | 'reflection';
+  /** Piste jouée en fond pendant l'exercice (servie par le front), ou rien. */
+  music: string | null;
+  /** Les signaux de la mesure que cet exercice vise, le principal d'abord. */
+  signals: DominantSignal[];
 }
 
 export interface Recommendation {

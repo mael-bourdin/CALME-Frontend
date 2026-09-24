@@ -185,7 +185,13 @@ function buildRecommendation(assessment: Assessment): Recommendation {
     if (assessment.level === 'amber') return e.kind === 'breathing' || e.kind === 'grounding';
     return e.minLevel === 'green';
   });
-  const exercise = allowed[0] ?? EXERCISES[0];
+  // Démonstration : `?exercice=visage` dans l'adresse force l'exercice
+  // proposé, pour montrer n'importe lequel sans fabriquer la mesure qui y mène.
+  const force =
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('exercice')
+      : null;
+  const exercise = EXERCISES.find((e) => e.id === force) ?? allowed[0] ?? EXERCISES[0];
   const source = state.modelDown ? 'rules' : 'model';
 
   return {

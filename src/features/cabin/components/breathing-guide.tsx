@@ -1,36 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AIPresence } from '@/components/ai/presence';
+import { RESPIRATION_PAR_DEFAUT, RESPIRATIONS } from '../lib/exercices-guides';
 
-interface Step {
-  label: string;
-  seconds: number;
-}
-
-const PATTERNS: Record<string, Step[]> = {
-  'coherence-365': [
-    { label: 'Inspire', seconds: 5 },
-    { label: 'Expire', seconds: 5 },
-  ],
-  carre: [
-    { label: 'Inspire', seconds: 4 },
-    { label: 'Retiens', seconds: 4 },
-    { label: 'Expire', seconds: 4 },
-    { label: 'Retiens', seconds: 4 },
-  ],
-  'respiration-478': [
-    { label: 'Inspire', seconds: 4 },
-    { label: 'Retiens', seconds: 7 },
-    { label: 'Expire', seconds: 8 },
-  ],
-};
-
-const DEFAULT_PATTERN = PATTERNS['coherence-365'];
-
+// Les rythmes vivent avec le reste du contenu des exercices, sous les
+// identifiants du catalogue du serveur (cc365, carre, 478, soupir).
 interface BreathingGuideProps {
   exerciseId: string;
   durationMinutes: number;
   onComplete: () => void;
   size?: number;
+  /** En pause, le temps s'arrête : compte à rebours, anneau et fin. */
+  paused?: boolean;
 }
 
 /**
@@ -48,8 +28,9 @@ export function BreathingGuide({
   durationMinutes,
   onComplete,
   size = 428,
+  paused = false,
 }: BreathingGuideProps) {
-  const pattern = useMemo(() => PATTERNS[exerciseId] ?? DEFAULT_PATTERN, [exerciseId]);
+  const pattern = useMemo(() => RESPIRATIONS[exerciseId] ?? RESPIRATION_PAR_DEFAUT, [exerciseId]);
   const cycleSeconds = useMemo(
     () => pattern.reduce((total, step) => total + step.seconds, 0),
     [pattern],
@@ -57,10 +38,20 @@ export function BreathingGuide({
 
   const [elapsed, setElapsed] = useState(0);
   const finished = useRef(false);
+  const enPause = useRef(paused);
+  enPause.current = paused;
 
+  // Le temps s'accumule par petits pas plutôt que d'être lu sur une horloge
+  // de départ : c'est ce qui permet à la pause de vraiment l'arrêter.
   useEffect(() => {
-    const start = Date.now();
-    const id = window.setInterval(() => setElapsed((Date.now() - start) / 1000), 200);
+    setElapsed(0);
+    let precedent = Date.now();
+    const id = window.setInterval(() => {
+      const maintenant = Date.now();
+      const pas = (maintenant - precedent) / 1000;
+      precedent = maintenant;
+      if (!enPause.current) setElapsed((e) => e + pas);
+    }, 200);
     return () => window.clearInterval(id);
   }, [exerciseId]);
 
@@ -120,7 +111,10 @@ export function BreathingGuide({
             strokeLinecap="round"
             pathLength={1}
             strokeDasharray={1}
-            style={{ animation: `ring ${cycleSeconds}s linear infinite` }}
+            style={{
+              animation: `ring ${cycleSeconds}s linear infinite`,
+              animationPlayState: paused ? 'paused' : 'running',
+            }}
           />
         </g>
       </svg>
@@ -151,13 +145,19 @@ export function BreathingGuide({
 }
 
 /** La part du temps total déjà écoulée, pour le filet du bas. */
-export function useExerciseProgress(durationMinutes: number): number {
+export function useExerciseProgress(durationMinutes: number, paused = false): number {
   const [ratio, setRatio] = useState(0);
+  const enPause = useRef(paused);
+  enPause.current = paused;
   useEffect(() => {
-    const start = Date.now();
     const total = durationMinutes * 60_000;
+    let ecoule = 0;
+    let precedent = Date.now();
     const id = window.setInterval(() => {
-      setRatio(Math.min(1, (Date.now() - start) / total));
+      const maintenant = Date.now();
+      if (!enPause.current) ecoule += maintenant - precedent;
+      precedent = maintenant;
+      setRatio(Math.min(1, ecoule / total));
     }, 250);
     return () => window.clearInterval(id);
   }, [durationMinutes]);

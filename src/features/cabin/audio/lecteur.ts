@@ -45,6 +45,63 @@ export function installerDeverrouillageAudio(): void {
   window.addEventListener('keydown', deverrouiller);
 }
 
+/* ---- Musique de fond -------------------------------------------------- */
+
+/** Volume de la musique quand personne ne parle, et pendant que Lila parle :
+ * la voix doit toujours passer devant, la musique ne s'arrête jamais net. */
+const VOLUME_MUSIQUE = 0.55;
+const VOLUME_MUSIQUE_SOUS_VOIX = 0.15;
+
+let gainMusique: GainNode | null = null;
+let voixEnCours = 0;
+
+function ajusterMusique(): void {
+  if (!gainMusique || !contexte) return;
+  const cible = voixEnCours > 0 ? VOLUME_MUSIQUE_SOUS_VOIX : VOLUME_MUSIQUE;
+  gainMusique.gain.setTargetAtTime(cible, contexte.currentTime, 0.25);
+}
+
+export interface Musique {
+  pause(): void;
+  reprendre(): void;
+  arreter(): void;
+}
+
+/**
+ * Joue une piste en boucle, sous la voix. Passe par le même `AudioContext`
+ * que la voix : débloqué une fois, il sert aux deux, et le volume de la
+ * musique peut baisser pendant que Lila parle.
+ */
+export function jouerMusique(url: string): Musique {
+  const ctx = contexteAudio();
+  void ctx.resume().catch(() => undefined);
+  const element = new Audio(url);
+  element.loop = true;
+  element.preload = 'auto';
+  const source = ctx.createMediaElementSource(element);
+  const gain = ctx.createGain();
+  gain.gain.value = 0;
+  source.connect(gain).connect(ctx.destination);
+  gainMusique = gain;
+  ajusterMusique();
+  void element.play().catch(() => undefined);
+
+  return {
+    pause: () => element.pause(),
+    reprendre: () => void element.play().catch(() => undefined),
+    arreter: () => {
+      gain.gain.setTargetAtTime(0, ctx.currentTime, 0.3);
+      window.setTimeout(() => {
+        element.pause();
+        element.src = '';
+        source.disconnect();
+        gain.disconnect();
+      }, 1200);
+      if (gainMusique === gain) gainMusique = null;
+    },
+  };
+}
+
 /** Vrai quand la sortie son peut jouer sans nouveau geste. */
 export function sonDisponible(): boolean {
   return contexte?.state === 'running';
@@ -144,6 +201,13 @@ function direParLeNavigateur(texte: string, signal?: AbortSignal): Promise<void>
  */
 export async function direTexte(texte: string, signal?: AbortSignal): Promise<void> {
   if (!texte || signal?.aborted) return;
-  const ok = await direParLeServeur(texte, signal);
-  if (!ok && !signal?.aborted) await direParLeNavigateur(texte, signal);
+  voixEnCours++;
+  ajusterMusique();
+  try {
+    const ok = await direParLeServeur(texte, signal);
+    if (!ok && !signal?.aborted) await direParLeNavigateur(texte, signal);
+  } finally {
+    voixEnCours--;
+    ajusterMusique();
+  }
 }

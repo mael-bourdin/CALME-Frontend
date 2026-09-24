@@ -62,9 +62,7 @@ export function CabinRoute() {
 
         {session.phase === 'exercise' && session.recommendation && (
           <ExerciseScreen
-            exerciseId={session.recommendation.exercise.id}
-            exerciseName={session.recommendation.exercise.name}
-            durationMinutes={session.recommendation.exercise.duration}
+            exercise={session.recommendation.exercise}
             onComplete={() => void session.finishExercise()}
           />
         )}

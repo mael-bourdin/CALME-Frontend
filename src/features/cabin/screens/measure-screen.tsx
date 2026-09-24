@@ -9,6 +9,16 @@ import { useFaceIndex } from '../hooks/use-face-index';
 import { PrivacyToggles } from '../components/privacy-toggles';
 import { SensorStrip } from '../components/sensor-strip';
 
+/** La taille de la phrase suit sa longueur : une relance de Lila fait trois
+ * fois la question d'ouverture, et à taille égale elle passait sous le
+ * bandeau du bas sur la dalle 800×480. */
+function taillePhrase(phrase: string): string {
+  if (phrase.length <= 60) return 'text-[clamp(1.75rem,3.5vw,50.41px)]';
+  if (phrase.length <= 120)
+    return 'text-[clamp(1.35rem,2.6vw,2.4rem)] [@media(max-height:520px)]:text-[1.3rem]';
+  return 'text-[clamp(1.15rem,2.1vw,1.9rem)] [@media(max-height:520px)]:text-[1.1rem]';
+}
+
 /** Ce que montre la sphère selon le moment du dialogue. */
 const PRESENCE: Record<EtatDialogue, 'speaking' | 'listening' | 'thinking' | 'idle'> = {
   parle: 'speaking',
@@ -91,19 +101,24 @@ export function MeasureScreen({
 
       {/* Cotes relevées sur C2 : sphère de 304 posée à 97 du haut, question
           juste dessous sur 722 de large. */}
-      <div className="flex w-full flex-col items-center pt-[97px] [@media(max-height:520px)]:pt-6">
+      {/* Le bas de ce bloc réserve la hauteur du bandeau fixe (pastilles,
+          relevés, filet) : le texte s'arrête au-dessus, jamais dessous. */}
+      <div className="flex w-full flex-col items-center pb-[300px] pt-[97px] [@media(max-height:520px)]:pb-[150px] [@media(max-height:520px)]:pt-4">
         {/* Iridescente : sur cet écran l'IA pose une question, donc elle parle. Le
             témoin rouge du micro n'est pas sur la sphère mais dans la pastille
             « Micro » — c'est là qu'on va le chercher quand on se demande ce qui
             est ouvert. */}
-        <AIPresence state={PRESENCE[dialogue.etat]} size={compact ? 160 : 304} />
+        <AIPresence
+          state={PRESENCE[dialogue.etat]}
+          size={compact ? (dialogue.phrase.length > 60 ? 110 : 160) : 304}
+        />
 
         <motion.h1
           key={dialogue.phrase}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem,3.5vw,50.41px)] leading-[1.322] tracking-[-0.018em]"
+          className={`mt-2 w-[min(722px,100%)] text-balance text-center font-display leading-[1.322] tracking-[-0.018em] ${taillePhrase(dialogue.phrase)}`}
         >
           {dialogue.phrase}
         </motion.h1>
@@ -112,7 +127,7 @@ export function MeasureScreen({
             l'astronaute peut vérifier qu'il a été entendu. Rien n'est gardé. */}
         <p
           aria-live="polite"
-          className="mt-2 min-h-5 max-w-[640px] text-center text-sm italic text-ink-faint [@media(max-height:520px)]:mt-1 [@media(max-height:520px)]:text-xs"
+          className="mt-2 line-clamp-2 min-h-5 max-w-[640px] text-center text-sm italic text-ink-faint [@media(max-height:520px)]:mt-1 [@media(max-height:520px)]:line-clamp-1 [@media(max-height:520px)]:text-xs"
         >
           {dialogue.etat === 'ecoute'
             ? 'Je t’écoute…'
