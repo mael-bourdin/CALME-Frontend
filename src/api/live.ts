@@ -114,6 +114,14 @@ export const liveTransport: Transport = {
     return request<SessionOutcome>(`/sessions/${segment(sessionId)}/close`, { method: 'POST' });
   },
 
+  assess(sessionId) {
+    return request<Assessment>(`/sessions/${segment(sessionId)}/assess`, {
+      method: 'POST',
+      // Évaluation puis rédaction par le modèle local, sur le CPU de la tour.
+      timeoutMs: 45_000,
+    });
+  },
+
   recommend(assessmentId) {
     // La consigne passe par le modèle local : le dossier se donne trente
     // secondes entre la fin de la mesure et l'affichage, on laisse la marge.

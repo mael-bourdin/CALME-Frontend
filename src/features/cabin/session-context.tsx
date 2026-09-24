@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 import type { ReactNode } from 'react';
-import { api } from '@/api';
+import { api, isMock } from '@/api';
 import type {
   Assessment,
   ConnectionState,
@@ -59,6 +59,8 @@ interface SessionContextValue {
    */
   identify: (member: CrewMember) => Promise<void>;
   start: () => Promise<void>;
+  /** La minute de mesure et la conversation sont finies : on évalue. */
+  finishMeasure: () => Promise<void>;
   acceptExercise: () => void;
   finishExercise: () => Promise<void>;
   sendFeedback: (feedback: Feedback) => Promise<void>;
@@ -84,6 +86,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const streamRef = useRef<SessionStream | null>(null);
+  // Une évaluation arrive deux fois en mode réel (réponse HTTP et flux
+  // temps réel) : elle n'est traitée qu'une fois. Même chose pour la consigne.
+  const evaluationTraitee = useRef<string | null>(null);
+  const consigneRecue = useRef(false);
+
+  // Le serveur ne compte pas la minute de mesure : en mode réel, c'est la
+  // cabine qui la compte. La simulation, elle, envoie sa propre progression.
+  useEffect(() => {
+    if (phase !== 'measuring' || isMock) return;
+    const id = window.setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [phase]);
 
   // Qui s'assoit dans la cabine n'est plus supposé d'avance : l'accueil le
   // découvre lui-même (reconnaissance faciale, puis liste, puis enrôlement —
@@ -129,6 +143,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setAssessment(null);
     setRecommendation(null);
     setOutcome(null);
+    evaluationTraitee.current = null;
+    consigneRecue.current = false;
 
     try {
       const session = await api.openSession(member.id);
@@ -159,9 +175,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             setElapsed(event.payload.elapsedSeconds);
             setTotal(event.payload.totalSeconds);
             break;
+          case 'recommendation':
+            // Le serveur a rédigé la consigne en même temps que l'évaluation.
+            consigneRecue.current = true;
+            setRecommendation(event.payload);
+            setPhase('result');
+            break;
           case 'assessment': {
+            if (evaluationTraitee.current === event.payload.id) break;
+            evaluationTraitee.current = event.payload.id;
             setAssessment(event.payload);
             setPhase('thinking');
+            // En mode réel, la consigne arrive par le flux (voir
+            // finishMeasure) : la redemander ici relancerait une rédaction.
+            if (!isMock) break;
             // La décision est prise, reste la rédaction de la consigne.
             void api
               .recommend(event.payload.id)
@@ -184,6 +211,39 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setPhase('idle');
     }
   }, [member]);
+
+  const finishMeasure = useCallback(async () => {
+    if (isMock || !sessionId) return;
+    setPhase('thinking');
+    for (let essai = 0; essai < 2; essai++) {
+      try {
+        const evaluation = await api.assess(sessionId);
+        if (evaluationTraitee.current !== evaluation.id) {
+          evaluationTraitee.current = evaluation.id;
+          setAssessment(evaluation);
+        }
+        // La consigne est normalement déjà arrivée par le flux. Sinon (flux
+        // coupé), on la demande explicitement.
+        if (!consigneRecue.current) {
+          await new Promise((r) => setTimeout(r, 1500));
+        }
+        if (!consigneRecue.current) {
+          const consigne = await api.recommend(evaluation.id);
+          consigneRecue.current = true;
+          setRecommendation(consigne);
+        }
+        setPhase('result');
+        return;
+      } catch (cause) {
+        if (essai === 1) {
+          setError(cause instanceof Error ? cause.message : 'Évaluation impossible');
+          setPhase('idle');
+        } else {
+          await new Promise((r) => setTimeout(r, 3000));
+        }
+      }
+    }
+  }, [sessionId]);
 
   const acceptExercise = useCallback(() => setPhase('exercise'), []);
 
@@ -264,6 +324,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       error,
       identify,
       start,
+      finishMeasure,
       acceptExercise,
       finishExercise,
       sendFeedback,
@@ -286,6 +347,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       error,
       identify,
       start,
+      finishMeasure,
       acceptExercise,
       finishExercise,
       sendFeedback,

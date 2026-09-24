@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { AIPresence } from '@/components/ai/presence';
 import type { ConnectionState, ConsentState, SensorFrame } from '@/api';
@@ -38,6 +39,8 @@ interface MeasureScreenProps {
   question?: string;
   /** Pour brancher les indices visage et voix sur la bonne séance. */
   sessionId: string | null;
+  /** La minute est écoulée et la conversation terminée : place à l'évaluation. */
+  onMeasureDone?: () => void;
 }
 
 /**
@@ -67,6 +70,7 @@ export function MeasureScreen({
   connection,
   question = 'Qu’est-ce que tu as fait aujourd’hui ?',
   sessionId,
+  onMeasureDone,
 }: MeasureScreenProps) {
   // Sur la dalle courte, le bandeau bas (pastilles + relevés) reste en
   // position fixe et mange 144 px du bas de l'écran : la sphère et la
@@ -87,6 +91,21 @@ export function MeasureScreen({
     micro: consent.microphone,
     resteSecondes: totalSeconds - elapsedSeconds,
   });
+
+  // La mesure se termine quand la minute est écoulée ET que la conversation
+  // est finie : on ne coupe pas quelqu'un au milieu du récit de sa journée.
+  // Garde-fou : une minute de plus au maximum, quoi qu'il arrive.
+  const termine = useRef(false);
+  const onMeasureDoneRef = useRef(onMeasureDone);
+  onMeasureDoneRef.current = onMeasureDone;
+  useEffect(() => {
+    if (termine.current) return;
+    const minuteFinie = elapsedSeconds >= totalSeconds;
+    if ((minuteFinie && dialogue.etat === 'termine') || elapsedSeconds >= totalSeconds + 60) {
+      termine.current = true;
+      onMeasureDoneRef.current?.();
+    }
+  }, [elapsedSeconds, totalSeconds, dialogue.etat]);
 
   // Le système annonce sa confiance réduite, il ne la cache pas : si un des
   // deux capteurs part en erreur, l'écran le dit plutôt que de laisser

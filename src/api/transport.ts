@@ -99,6 +99,13 @@ export interface Transport {
   openSession(crewId: string): Promise<Session>;
   getSession(sessionId: string): Promise<Session>;
   closeSession(sessionId: string): Promise<SessionOutcome>;
+  /**
+   * Termine la mesure : évaluation, puis rédaction de la consigne, poussées
+   * aussi sur le flux temps réel. Le serveur ne compte pas le temps de mesure
+   * lui-même : c'est la cabine qui décide quand la minute (et la conversation)
+   * est finie.
+   */
+  assess(sessionId: string): Promise<Assessment>;
   /** Déclenche la décision puis la rédaction de la consigne. */
   recommend(assessmentId: string): Promise<Recommendation>;
   sendFeedback(recommendationId: string, feedback: Feedback): Promise<void>;

@@ -410,6 +410,12 @@ export const mockTransport: Transport = {
     return Promise.reject(new Error('Séance inconnue'));
   },
 
+  async assess() {
+    // La simulation termine la mesure elle-même, par son flux (voir
+    // createMockStream) : la cabine ne l'appelle jamais en mode simulé.
+    throw new Error('La simulation termine la mesure elle-même.');
+  },
+
   closeSession(sessionId) {
     const before = state.assessment?.index ?? 58;
     const after = state.assessment?.level === 'unreliable' ? null : 34;

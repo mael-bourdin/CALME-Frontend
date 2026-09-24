@@ -30,9 +30,13 @@ export function ResultScreen({ assessment, recommendation, onAccept }: ResultScr
   const unreliable = assessment.level === 'unreliable';
   const tint = unreliable ? undefined : (assessment.level as 'green' | 'amber' | 'red');
 
-  const sentence = unreliable
-    ? 'La mesure n’est pas exploitable. Je préfère ne rien en conclure.'
-    : (recommendation?.message ?? 'Je regarde encore.');
+  // Même sur une mesure incomplète, le serveur propose un exercice doux et sa
+  // consigne le dit : c'est elle qu'on affiche dès qu'elle existe.
+  const sentence =
+    recommendation?.message ??
+    (unreliable
+      ? 'La mesure n’est pas exploitable. Je préfère ne rien en conclure.'
+      : 'Je regarde encore.');
 
   // La sphère bat au rythme de la phrase qu'elle prononce. Le texte, lui,
   // s'affiche d'un coup : c'est un résultat, on doit pouvoir le relire tout de
@@ -86,7 +90,11 @@ className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem
             disabled={!unreliable && !recommendation}
             iconAfter={<ArrowRight className="size-4.5" strokeWidth={1.7} aria-hidden />}
           >
-            {unreliable ? 'Reprendre la mesure' : 'Voir mes résultats'}
+            {recommendation
+              ? 'Commencer l’exercice'
+              : unreliable
+                ? 'Reprendre la mesure'
+                : 'Voir mes résultats'}
           </Button>
 
         </motion.div>
