@@ -148,6 +148,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     try {
       const session = await api.openSession(member.id);
+      // Le serveur remet caméra et micro actifs à chaque nouvelle séance.
+      setConsent({ camera: true, microphone: true });
       setSessionId(session.id);
       setPhase('measuring');
 
@@ -297,8 +299,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async (key: keyof ConsentState) => {
       const next = { ...consent, [key]: !consent[key] };
       setConsent(next); // optimiste : la bascule doit être immédiate
+      // Hors séance, le choix reste à l'écran : il n'y a pas de séance à
+      // laquelle l'attacher côté serveur. L'appel échouait (« standby » n'est
+      // pas une séance) et annulait la bascule — réactiver le micro ne
+      // marchait donc pas.
+      if (!sessionId) return;
       try {
-        const confirmed = await api.setConsent(sessionId ?? 'standby', next);
+        const confirmed = await api.setConsent(sessionId, next);
         setConsent(confirmed);
       } catch {
         setConsent(consent);
