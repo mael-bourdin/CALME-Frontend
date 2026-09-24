@@ -8,6 +8,7 @@ import { levelClasses } from '@/components/ui/tag';
 import { Avatar } from '@/components/ui/avatar';
 import { useAsync } from '@/lib/use-async';
 import { cn } from '@/lib/cn';
+import { dateLisible } from '@/lib/date-lisible';
 
 function TrendIcon({ delta }: { delta: number }) {
   if (delta > 2) return <ArrowUp className="size-3.5" strokeWidth={2} aria-hidden />;
@@ -61,7 +62,7 @@ function Row({ entry, index }: { entry: CrewSummary; index: number }) {
         </p>
 
         <p className="hidden font-mono text-xs text-ink-faint sm:block sm:text-right">
-          {entry.lastSessionAt}
+          {dateLisible(entry.lastSessionAt)}
         </p>
       </Link>
     </div>

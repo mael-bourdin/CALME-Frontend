@@ -3,6 +3,7 @@ import type { Alert } from '@/api';
 import { GlassPanel } from '@/components/ui/glass-panel';
 import { useAsync } from '@/lib/use-async';
 import { AlertBanner } from '../components/alert-banner';
+import { dateLisible } from '@/lib/date-lisible';
 
 /** Ce qu'il est advenu d'une alerte déjà traitée. */
 function outcome(alert: Alert): string {
@@ -65,7 +66,7 @@ export function AlertsScreen() {
                 <span className="size-1.5 rounded-full bg-ink-faint/60" aria-hidden />
                 <p className="truncate">{alert.crewName}</p>
                 <p className="col-start-2 font-mono text-xs text-ink-faint sm:col-start-auto">
-                  {alert.raisedAt}
+                  {dateLisible(alert.raisedAt)}
                 </p>
                 <p className="col-start-2 text-sm text-ink-soft sm:col-start-auto">
                   {outcome(alert)}

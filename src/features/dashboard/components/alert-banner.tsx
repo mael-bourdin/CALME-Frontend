@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { GlassPanel } from '@/components/ui/glass-panel';
 import { cn } from '@/lib/cn';
 import type { Alert } from '@/api';
+import { dateLisible } from '@/lib/date-lisible';
 
 interface AlertBannerProps {
   alert: Alert;
@@ -50,7 +51,7 @@ export function AlertBanner({ alert, onAcknowledge, className }: AlertBannerProp
               : ' — capteur signalé suspect'}
           </p>
           <p className="text-sm text-ink-soft">
-            {alert.raisedAt}. Ni la mesure ni la séance ne te sont transmises.
+            {dateLisible(alert.raisedAt)}. Ni la mesure ni la séance ne te sont transmises.
           </p>
         </div>
 

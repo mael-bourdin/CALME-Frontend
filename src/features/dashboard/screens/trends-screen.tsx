@@ -86,7 +86,7 @@ export function TrendsScreen() {
             />
             <Figure
               value={`${Math.round(trends.data.amberShare * 100)} %`}
-              caption="des séances en orange, contre 24 le mois dernier"
+              caption="des séances en orange ou en rouge, sur trente jours"
               tone="text-watch"
             />
           </GlassPanel>

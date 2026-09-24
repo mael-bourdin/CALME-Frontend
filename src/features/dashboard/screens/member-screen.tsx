@@ -7,6 +7,7 @@ import { Curve } from '@/components/data/curve';
 import { levelClasses } from '@/components/ui/tag';
 import { useAsync } from '@/lib/use-async';
 import { cn } from '@/lib/cn';
+import { dateLisible } from '@/lib/date-lisible';
 
 function levelFor(index: number): Level {
   if (index >= 70) return 'red';
@@ -56,8 +57,8 @@ export function MemberScreen() {
         <Lock className="size-4 shrink-0 text-alert" strokeWidth={1.7} aria-hidden />
         <p className="min-w-0 flex-1 text-sm">
           {accessGrant.reason === 'alert-acknowledged'
-            ? `Accès ouvert par l’alerte du ${accessGrant.grantedAt}, acquittée par ${accessGrant.acknowledgedBy}.`
-            : `Accès ouvert le ${accessGrant.grantedAt} avec l’accord explicite de la personne.`}
+            ? `Accès ouvert par l’alerte du ${dateLisible(accessGrant.grantedAt)}, acquittée par ${accessGrant.acknowledgedBy}.`
+            : `Accès ouvert ${dateLisible(accessGrant.grantedAt)} avec l’accord explicite de la personne.`}
         </p>
         {/* La règle est écrite à côté de l'exception, pas dans une politique
             que personne n'ouvre : c'est ici qu'on est en train d'en profiter. */}
@@ -122,7 +123,7 @@ export function MemberScreen() {
               key={session.id}
               className="grid grid-cols-[1fr_auto] items-center gap-x-5 gap-y-1 py-4 sm:grid-cols-[10rem_auto_1fr_auto]"
             >
-              <p className="font-mono text-xs text-ink-faint">{session.at}</p>
+              <p className="font-mono text-xs text-ink-faint">{dateLisible(session.at)}</p>
 
               <p className="flex items-center gap-2 font-mono tabular">
                 <span className={levelClasses(levelFor(session.indexBefore)).text}>
