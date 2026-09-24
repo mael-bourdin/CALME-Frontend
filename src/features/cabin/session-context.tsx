@@ -170,6 +170,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
                 faceTension: p.faceTension ?? prev.faceTension,
                 voiceIndex: p.voiceIndex ?? prev.voiceIndex,
                 suspect: p.suspect,
+                faceScore: p.faceScore ?? prev.faceScore,
+                voiceScore: p.voiceScore ?? prev.voiceScore,
+                moodScore: p.moodScore ?? prev.moodScore,
               };
             });
             break;

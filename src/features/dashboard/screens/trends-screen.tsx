@@ -39,7 +39,7 @@ export function TrendsScreen() {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-medium">Indice moyen d’équipage</h2>
               <p className="text-sm text-ink-faint">
-                Les pointillés sont les seuils 40 et 70 du moteur de règles.
+                Note de bien-être sur 100 (100 = le mieux). Les pointillés sont les seuils 35 et 60.
               </p>
             </div>
 
@@ -50,8 +50,8 @@ export function TrendsScreen() {
               color="var(--c-accent)"
               height={230}
               thresholds={[
-                { value: 40, color: 'var(--c-watch)' },
-                { value: 70, color: 'var(--c-alert)' },
+                { value: 60, color: 'var(--c-watch)' },
+                { value: 35, color: 'var(--c-alert)' },
               ]}
               aria-label="Indice moyen d’équipage sur trente jours"
             />

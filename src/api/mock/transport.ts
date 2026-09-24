@@ -241,6 +241,11 @@ function createMockStream(sessionId: string): SessionStream {
         state.consent.camera && state.mode !== 'degraded' ? 0.28 + random() * 0.08 : null,
       voiceIndex: state.consent.microphone ? 0.4 + random() * 0.1 : null,
       suspect: [...state.suspect],
+      // Notes de bien-être sur 100, comme celles du serveur.
+      faceScore:
+        state.consent.camera && state.mode !== 'degraded' ? Math.round(70 + random() * 12) : null,
+      voiceScore: state.consent.microphone ? Math.round(72 + random() * 10) : null,
+      moodScore: elapsed > 20 ? 68 : null,
     };
   }
 

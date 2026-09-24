@@ -45,6 +45,7 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
   const clignements = useRef<number[]>([]);
   const yeuxFermes = useRef(false);
   const tensions = useRef<number[]>([]);
+  const sourires = useRef<number[]>([]);
   const matrices = useRef<number[][]>([]);
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
     clignements.current = [];
     yeuxFermes.current = false;
     tensions.current = [];
+    sourires.current = [];
     matrices.current = [];
 
     let vivant = true;
@@ -154,6 +156,10 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
           const bouche = (valeur(formes, 'mouthPressLeft') + valeur(formes, 'mouthPressRight')) / 2;
           tensions.current.push(sourcils * 0.7 + bouche * 0.3);
           if (tensions.current.length > FPS * FENETRE_S) tensions.current.shift();
+          sourires.current.push(
+            (valeur(formes, 'mouthSmileLeft') + valeur(formes, 'mouthSmileRight')) / 2,
+          );
+          if (sourires.current.length > FPS * FENETRE_S) sourires.current.shift();
 
           // Front montant seulement : sans ça, un œil fermé deux secondes
           // compterait pour vingt clignements.
@@ -183,6 +189,15 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
             .sendFaceIndex(sessionId!, {
               at: new Date().toISOString(),
               tension: Math.min(1, Math.max(0, tension)),
+              // Le sourire relève la note du visage (voir notation côté serveur).
+              smile: Math.min(
+                1,
+                Math.max(
+                  0,
+                  sourires.current.reduce((x, y) => x + y, 0) /
+                    Math.max(1, sourires.current.length),
+                ),
+              ),
               blinkRate,
               stillness,
             })

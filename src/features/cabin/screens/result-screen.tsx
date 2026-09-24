@@ -32,11 +32,13 @@ export function ResultScreen({ assessment, recommendation, onAccept }: ResultScr
 
   // Même sur une mesure incomplète, le serveur propose un exercice doux et sa
   // consigne le dit : c'est elle qu'on affiche dès qu'elle existe.
-  const sentence =
+  // D'abord la note (« Tout va bien : 82 sur 100. »), puis la consigne.
+  const consigne =
     recommendation?.message ??
     (unreliable
       ? 'La mesure n’est pas exploitable. Je préfère ne rien en conclure.'
       : 'Je regarde encore.');
+  const sentence = assessment.verdict ? `${assessment.verdict} ${consigne}` : consigne;
 
   // La sphère bat au rythme de la phrase qu'elle prononce. Le texte, lui,
   // s'affiche d'un coup : c'est un résultat, on doit pouvoir le relire tout de
@@ -72,11 +74,10 @@ export function ResultScreen({ assessment, recommendation, onAccept }: ResultScr
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem,3.5vw,50.41px)] leading-[1.322] tracking-[-0.018em]"
+          className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem,3.5vw,50.41px)] leading-[1.322] tracking-[-0.018em]"
         >
           {sentence}
         </motion.h1>
-
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -96,7 +97,6 @@ className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem
                 ? 'Reprendre la mesure'
                 : 'Voir mes résultats'}
           </Button>
-
         </motion.div>
       </div>
     </section>

@@ -21,8 +21,9 @@ export function seeded(seed: number): () => number {
 }
 
 export function levelFor(index: number): Level {
-  if (index >= 70) return 'red';
-  if (index >= 40) return 'amber';
+  // Note de bien-être sur 100 (100 = le mieux).
+  if (index < 35) return 'red';
+  if (index < 60) return 'amber';
   return 'green';
 }
 

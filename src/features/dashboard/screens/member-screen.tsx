@@ -9,10 +9,11 @@ import { useAsync } from '@/lib/use-async';
 import { cn } from '@/lib/cn';
 import { dateLisible } from '@/lib/date-lisible';
 
+/** Note de bien-être sur 100 (100 = le mieux) : vert dès 60, rouge sous 35. */
 function levelFor(index: number): Level {
-  if (index >= 70) return 'red';
-  if (index >= 40) return 'amber';
-  return 'green';
+  if (index >= 60) return 'green';
+  if (index >= 35) return 'amber';
+  return 'red';
 }
 
 const FEEDBACK_LABEL = {
@@ -109,8 +110,8 @@ export function MemberScreen() {
           }
           height={200}
           thresholds={[
-            { value: 40, color: 'var(--c-watch)' },
-            { value: 70, color: 'var(--c-alert)' },
+            { value: 60, color: 'var(--c-watch)' },
+            { value: 35, color: 'var(--c-alert)' },
           ]}
           aria-label={`Indice de ${member.displayName} sur trente jours`}
         />

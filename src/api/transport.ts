@@ -56,6 +56,8 @@ export interface FaceIndex {
   blinkRate: number;
   /** Immobilité, 0 à 1. */
   stillness: number;
+  /** Sourire moyen, 0 à 1 : il relève la note du visage. */
+  smile?: number;
 }
 
 /**

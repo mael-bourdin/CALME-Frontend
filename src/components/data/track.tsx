@@ -24,7 +24,7 @@ interface TrackProps {
  * Huit cartes identiques ne se comparent pas ; huit réglettes alignées, si.
  * On lit le rang et la distance au seuil sans avoir à lire les chiffres.
  */
-export function Track({ value, level, className, thresholds = [40, 70], label }: TrackProps) {
+export function Track({ value, level, className, thresholds = [35, 60], label }: TrackProps) {
   const clamped = Math.max(0, Math.min(100, value));
 
   return (

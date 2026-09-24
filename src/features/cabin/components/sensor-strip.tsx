@@ -36,11 +36,13 @@ export function SensorStrip({
   frame: SensorFrame | null;
   className?: string;
 }) {
+  // Notes de bien-être sur 100 (100 = le mieux). Les capteurs de l'Arduino
+  // (cœur, sudation) sont abandonnés : la cabine s'appuie sur ce qu'elle voit
+  // et entend.
   const readings: Reading[] = [
-    { key: 'hr', label: 'Cardiaque', value: format(frame?.heartRate ?? null, 0), unit: 'bpm' },
-    { key: 'eda', label: 'Sudation', value: format(frame?.skinConductance ?? null, 1), unit: 'µS' },
-    { key: 'face', label: 'Visage', value: format(frame?.faceTension ?? null, 2) },
-    { key: 'voice', label: 'Voix', value: format(frame?.voiceIndex ?? null, 2) },
+    { key: 'face', label: 'Visage', value: format(frame?.faceScore ?? null, 0), unit: '/100' },
+    { key: 'voice', label: 'Voix', value: format(frame?.voiceScore ?? null, 0), unit: '/100' },
+    { key: 'mood', label: 'Humeur', value: format(frame?.moodScore ?? null, 0), unit: '/100' },
   ];
 
   return (

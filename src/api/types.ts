@@ -9,7 +9,7 @@
  */
 
 /** Les quatre signaux mesurés par la cabine. */
-export type SignalKey = 'hr' | 'eda' | 'face' | 'voice';
+export type SignalKey = 'hr' | 'eda' | 'face' | 'voice' | 'mood';
 
 /**
  * Le palier décidé par le moteur de règles. Jamais calculé côté client :
@@ -74,6 +74,11 @@ export interface SensorFrame {
   voiceIndex: number | null;
   /** Les signaux que le serveur considère comme non exploitables. */
   suspect: SignalKey[];
+  /** Notes de bien-être sur 100 (100 = le mieux), calculées par le serveur. */
+  faceScore?: number | null;
+  voiceScore?: number | null;
+  /** Humeur exprimée dans la conversation, sur 100. */
+  moodScore?: number | null;
 }
 
 /** Les indicateurs calculés sur fenêtre glissante de trente secondes. */
@@ -93,7 +98,8 @@ export interface Indicators {
 
 /**
  * Le résultat d'une mesure. `index` est la moyenne pondérée des écarts à
- * l'historique de la personne, ramenée sur 100 ; les seuils sont 40 et 70.
+ * Note de bien-être sur 100 : 100 = le mieux. Vert à partir de 60, orange de
+ * 35 à 59, rouge en dessous.
  */
 export interface Assessment {
   id: string;
@@ -109,6 +115,10 @@ export interface Assessment {
   personalBaseline: number | null;
   /** Absent des évaluations antérieures à son introduction. */
   dominantSignal?: DominantSignal;
+  /** Les trois notes sur 100 (100 = le mieux) : visage, voix, humeur. */
+  scores?: { face: number | null; voice: number | null; mood: number | null };
+  /** « Tout va bien : 82 sur 100. », rédigé par le serveur. */
+  verdict?: string;
   computedAt: string;
 }
 
@@ -120,6 +130,7 @@ export type DominantSignal =
   | 'eda_fond'
   | 'visage'
   | 'voix'
+  | 'parole'
   | 'fatigue'
   | 'diffus';
 

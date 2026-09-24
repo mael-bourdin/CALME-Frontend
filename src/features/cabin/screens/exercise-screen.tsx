@@ -106,7 +106,9 @@ export function ExerciseScreen({
         {clock(remaining)}
       </p>
 
-      <div className="-mt-10 [@media(max-height:520px)]:-mt-3">
+      {/* Toute la largeur : sans elle, le guide vocal se calait sur sa propre
+          largeur et le texte partait à gauche sur un grand écran. */}
+      <div className="-mt-10 flex w-full justify-center [@media(max-height:520px)]:-mt-3">
         {respiration || !script ? (
           <BreathingGuide
             exerciseId={exercise.id}

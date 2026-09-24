@@ -1,4 +1,4 @@
-import { Activity, Camera, Heart, Mic } from 'lucide-react';
+import { Activity, Camera, Heart, Mic, Smile } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { api } from '@/api';
 import type { SensorHealth, SignalKey } from '@/api';
@@ -12,6 +12,7 @@ const ICON: Record<SignalKey, LucideIcon> = {
   eda: Activity,
   face: Camera,
   voice: Mic,
+  mood: Smile,
 };
 
 const TONE: Record<string, { dot: string; text: string; stroke: string }> = {

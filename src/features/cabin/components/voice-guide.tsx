@@ -74,6 +74,10 @@ export function VoiceGuide({
   }, [elapsed, durationMinutes]);
 
   const texte = indice >= 0 ? script[indice].texte : '';
+  // Le décompte jusqu'à l'étape suivante (ou jusqu'à la fin) : on sait
+  // combien de temps tenir la position sans regarder l'horloge du coin.
+  const prochaine = script[indice + 1]?.t ?? durationMinutes * 60;
+  const decompte = Math.max(0, Math.ceil(prochaine - elapsed));
 
   return (
     <div className="flex w-[min(44rem,100%)] flex-col items-center text-center">
@@ -84,6 +88,12 @@ export function VoiceGuide({
         className="mt-8 min-h-[5.5rem] animate-[fade-in_0.6s_ease-out] text-balance font-display text-[clamp(1.4rem,2.8vw,2.4rem)] leading-[1.3] tracking-[-0.012em] [@media(max-height:520px)]:mt-3 [@media(max-height:520px)]:min-h-[3.5rem] [@media(max-height:520px)]:text-[1.15rem]"
       >
         {texte}
+      </p>
+      <p
+        className="mt-6 font-display text-[3rem] leading-none tabular text-accent [@media(max-height:520px)]:mt-2 [@media(max-height:520px)]:text-[2rem]"
+        aria-label={`${decompte} secondes avant l’étape suivante`}
+      >
+        {decompte}
       </p>
     </div>
   );
