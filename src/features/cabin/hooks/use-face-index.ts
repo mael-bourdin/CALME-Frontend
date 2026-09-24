@@ -2,6 +2,7 @@ import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { useEffect, useRef, useState } from 'react';
 
 import { api } from '../../../api';
+import { messageErreurCamera } from '../lib/erreur-camera';
 
 /**
  * L'indice facial, calculé dans le navigateur de la cabine.
@@ -104,8 +105,7 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
               valeur(formes, 'browDownRight') +
               valeur(formes, 'browInnerUp')) /
             3;
-          const bouche =
-            (valeur(formes, 'mouthPressLeft') + valeur(formes, 'mouthPressRight')) / 2;
+          const bouche = (valeur(formes, 'mouthPressLeft') + valeur(formes, 'mouthPressRight')) / 2;
           tensions.current.push(sourcils * 0.7 + bouche * 0.3);
           if (tensions.current.length > FPS * FENETRE_S) tensions.current.shift();
 
@@ -129,8 +129,7 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
           const limite = Date.now() - FENETRE_S * 1000;
           clignements.current = clignements.current.filter((t) => t > limite);
 
-          const tension =
-            tensions.current.reduce((a, b) => a + b, 0) / tensions.current.length;
+          const tension = tensions.current.reduce((a, b) => a + b, 0) / tensions.current.length;
           const blinkRate = (clignements.current.length * 60) / FENETRE_S;
           const stillness = calculerImmobilite(matrices.current);
 
@@ -147,7 +146,7 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
             });
         }, 1000);
       } catch (e) {
-        if (vivant) setErreur(e instanceof Error ? e.message : 'caméra indisponible');
+        if (vivant) setErreur(messageErreurCamera(e));
       }
     }
 
@@ -167,9 +166,7 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
 
 function calculerImmobilite(positions: number[][]): number {
   if (positions.length < 2) return 1;
-  const moyennes = [0, 1, 2].map(
-    (i) => positions.reduce((a, p) => a + p[i], 0) / positions.length,
-  );
+  const moyennes = [0, 1, 2].map((i) => positions.reduce((a, p) => a + p[i], 0) / positions.length);
   const variance =
     positions.reduce(
       (a, p) => a + [0, 1, 2].reduce((s, i) => s + (p[i] - moyennes[i]) ** 2, 0),

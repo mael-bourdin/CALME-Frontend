@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/api';
 import type { CrewMember } from '@/api';
-import { capturerEmpreinte } from '../lib/empreinte-visage';
+import { capturerEmpreinteDetaillee } from '../lib/empreinte-visage';
 import { useFaceRecognition } from '../hooks/use-face-recognition';
 import { CrewPicker } from './crew-picker';
 import { TouchKeyboard } from './touch-keyboard';
@@ -97,17 +97,19 @@ export function IdentificationFlow({ consentCamera, onIdentified }: Identificati
     }
 
     setEnrolement({ enCours: true, erreur: null });
-    const empreinte = await capturerEmpreinte();
-    if (!empreinte) {
+    // Cinq images plutôt que trois : l'empreinte enrôlée sert de référence à
+    // toutes les reconnaissances suivantes, elle doit être la plus stable.
+    const capture = await capturerEmpreinteDetaillee(5);
+    if (!capture.ok) {
       setEnrolement({
         enCours: false,
-        erreur: 'Je n’ai pas réussi à te voir. Réessaie.',
+        erreur: `Je n’ai pas réussi à te voir (${capture.raison}). Réessaie.`,
       });
       return;
     }
 
     try {
-      const membre = await api.enrollCrewMember(nom, empreinte);
+      const membre = await api.enrollCrewMember(nom, capture.empreinte);
       onIdentifiedRef.current(membre);
     } catch {
       setEnrolement({ enCours: false, erreur: 'Enrôlement impossible pour l’instant.' });
@@ -164,11 +166,25 @@ export function IdentificationFlow({ consentCamera, onIdentified }: Identificati
   }
 
   return (
-    <CrewPicker
-      crew={equipe}
-      loading={chargementEquipe}
-      onSelect={(membre) => onIdentifiedRef.current(membre)}
-      onNew={() => setEtape('clavier')}
-    />
+    <div className="flex w-full flex-col items-center gap-3 [@media(max-height:520px)]:gap-1.5">
+      {recherche.raison && consentCamera && (
+        <p role="status" className="flex items-center gap-3 text-xs text-ink-faint">
+          <span>Je ne t’ai pas reconnu : {recherche.raison}.</span>
+          <button
+            type="button"
+            className="min-h-11 rounded-full px-3 text-xs font-medium text-ink underline underline-offset-4"
+            onClick={recherche.reessayer}
+          >
+            Réessayer
+          </button>
+        </p>
+      )}
+      <CrewPicker
+        crew={equipe}
+        loading={chargementEquipe}
+        onSelect={(membre) => onIdentifiedRef.current(membre)}
+        onNew={() => setEtape('clavier')}
+      />
+    </div>
   );
 }

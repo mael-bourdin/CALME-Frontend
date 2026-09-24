@@ -324,6 +324,23 @@ export const mockTransport: Transport = {
     return { voiceIndex: 0.42 };
   },
 
+  async sendDialogueTurn(_sessionId, _wav, historique, dernierTour) {
+    // Le mock n'entend rien : il fait semblant d'avoir compris, pour que la
+    // conversation se déroule en démonstration sans serveur.
+    const tours = historique.filter((t) => t.role === 'lila').length;
+    const relances = [
+      'Ça a l’air d’avoir été une longue journée. Qu’est-ce qui t’a le plus pesé ?',
+      'Je comprends. Et là, maintenant, comment te sens-tu ?',
+    ];
+    return delay({
+      entendu: 'Une journée chargée.',
+      reponse: dernierTour
+        ? 'Merci de m’avoir parlé. Respire calmement, je termine la mesure.'
+        : relances[(tours - 1) % relances.length],
+      source: 'rules' as const,
+    });
+  },
+
   getCurrentMember() {
     return delay(CREW.find((m) => m.id === OCCUPANT_ID) ?? CREW[0]);
   },

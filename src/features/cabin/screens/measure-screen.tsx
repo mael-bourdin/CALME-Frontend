@@ -3,15 +3,19 @@ import { AIPresence } from '@/components/ai/presence';
 import type { ConnectionState, ConsentState, SensorFrame } from '@/api';
 import { CabinChrome, CabinProgress } from '../components/cabin-chrome';
 import { useCompactCabin } from '../hooks/use-compact-cabin';
+import { useDialogue } from '../hooks/use-dialogue';
+import type { EtatDialogue } from '../hooks/use-dialogue';
 import { useFaceIndex } from '../hooks/use-face-index';
-import { useParole } from '../hooks/use-parole';
-import { useVoiceSample } from '../hooks/use-voice-sample';
 import { PrivacyToggles } from '../components/privacy-toggles';
 import { SensorStrip } from '../components/sensor-strip';
 
-/** La question posée à voix haute dure dix secondes : c'est la fenêtre sur
- * laquelle la voix est enregistrée, une seule fois par séance. */
-const DUREE_REPONSE_S = 10;
+/** Ce que montre la sphère selon le moment du dialogue. */
+const PRESENCE: Record<EtatDialogue, 'speaking' | 'listening' | 'thinking' | 'idle'> = {
+  parle: 'speaking',
+  ecoute: 'listening',
+  reflechit: 'thinking',
+  termine: 'idle',
+};
 
 interface MeasureScreenProps {
   elapsedSeconds: number;
@@ -37,9 +41,9 @@ interface MeasureScreenProps {
  * vingt-trois secondes ne sert à personne ; savoir que ça avance, si.
  *
  * C'est aussi ici que les deux capteurs qui ne remontaient pas se branchent :
- * l'indice facial (calculé localement, voir `useFaceIndex`) et l'échantillon
- * de voix pris pendant que la question ci-dessus reste affichée (voir
- * `useVoiceSample`). Les deux ne s'activent que si l'astronaute n'a pas coupé
+ * l'indice facial (calculé localement, voir `useFaceIndex`) et la voix, prise
+ * pendant la conversation que la cabine mène à partir de la question
+ * ci-dessus (voir `useDialogue`). Les deux ne s'activent que si l'astronaute n'a pas coupé
  * le capteur correspondant — le composant n'existe que pendant la phase de
  * mesure, la condition de phase est donc déjà remplie par le simple fait que
  * cet écran soit monté.
@@ -63,21 +67,23 @@ export function MeasureScreen({
   // recouvrement.
   const compact = useCompactCabin();
 
-  const visage = useFaceIndex(sessionId, consent.camera);
-  const voix = useVoiceSample(sessionId, {
-    actif: consent.microphone,
-    dureeSecondes: DUREE_REPONSE_S,
+  // Bornée à la durée de la mesure : un onglet oublié sur cet écran ne doit
+  // pas garder la caméra pour lui indéfiniment.
+  const visage = useFaceIndex(sessionId, consent.camera && elapsedSeconds < totalSeconds + 5);
+  // La cabine pose sa question puis converse : voir `use-dialogue.ts`. La
+  // première réponse sert aussi d'échantillon pour l'indice vocal.
+  const dialogue = useDialogue(sessionId, {
+    question,
+    micro: consent.microphone,
+    resteSecondes: totalSeconds - elapsedSeconds,
   });
-  // La cabine pose la question à voix haute : serveur, puis navigateur, puis
-  // silence si les deux manquent — voir `use-parole.ts` pour la cascade.
-  useParole(question, sessionId);
 
   // Le système annonce sa confiance réduite, il ne la cache pas : si un des
   // deux capteurs part en erreur, l'écran le dit plutôt que de laisser
   // croire que tout remonte normalement.
   const alertes: string[] = [];
   if (visage.erreur) alertes.push(`Visage indisponible (${visage.erreur})`);
-  if (voix.erreur) alertes.push(`Voix indisponible (${voix.erreur})`);
+  if (dialogue.erreur) alertes.push(`Dialogue indisponible (${dialogue.erreur})`);
 
   return (
     <section className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6">
@@ -90,17 +96,32 @@ export function MeasureScreen({
             témoin rouge du micro n'est pas sur la sphère mais dans la pastille
             « Micro » — c'est là qu'on va le chercher quand on se demande ce qui
             est ouvert. */}
-        <AIPresence state="speaking" size={compact ? 160 : 304} />
+        <AIPresence state={PRESENCE[dialogue.etat]} size={compact ? 160 : 304} />
 
         <motion.h1
-          key={question}
+          key={dialogue.phrase}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem,3.5vw,50.41px)] leading-[1.322] tracking-[-0.018em]"
+          className="mt-2 w-[min(722px,100%)] text-center font-display text-[clamp(1.75rem,3.5vw,50.41px)] leading-[1.322] tracking-[-0.018em]"
         >
-          {question}
+          {dialogue.phrase}
         </motion.h1>
+
+        {/* Ce que la cabine a compris, le temps du tour suivant seulement :
+            l'astronaute peut vérifier qu'il a été entendu. Rien n'est gardé. */}
+        <p
+          aria-live="polite"
+          className="mt-2 min-h-5 max-w-[640px] text-center text-sm italic text-ink-faint [@media(max-height:520px)]:mt-1 [@media(max-height:520px)]:text-xs"
+        >
+          {dialogue.etat === 'ecoute'
+            ? 'Je t’écoute…'
+            : dialogue.etat === 'reflechit'
+              ? 'Je réfléchis…'
+              : dialogue.entendu
+                ? `« ${dialogue.entendu} »`
+                : '\u00a0'}
+        </p>
 
         {alertes.length > 0 && (
           <p

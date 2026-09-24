@@ -9,11 +9,13 @@ import type {
   HealthState,
   PowerState,
   Recommendation,
+  ReponseDialogue,
   SensorHealth,
   Session,
   SessionOutcome,
   SignalKey,
   StreamEvent,
+  TourDialogue,
 } from './types';
 
 /**
@@ -69,6 +71,16 @@ export interface Transport {
   sendFaceIndex(sessionId: string, indice: FaceIndex): Promise<void>;
   /** Pousse dix secondes de voix. La réponse ne contient que des indicateurs. */
   sendVoiceSample(sessionId: string, wav: Blob): Promise<{ voiceIndex: number }>;
+  /**
+   * Un tour de conversation : la réponse parlée de l'astronaute, l'historique
+   * gardé par le navigateur, et la relance de la cabine en retour.
+   */
+  sendDialogueTurn(
+    sessionId: string,
+    wav: Blob,
+    historique: TourDialogue[],
+    dernierTour: boolean,
+  ): Promise<ReponseDialogue>;
   getCurrentMember(): Promise<CrewMember>;
   getLastSessionAt(crewId: string): Promise<string | null>;
   /**

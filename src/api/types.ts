@@ -24,6 +24,21 @@ export type CabinMode = 'standby' | 'measuring' | 'session' | 'degraded';
 /** L'origine de la consigne affichée. */
 export type RecommendationSource = 'model' | 'rules';
 
+/** Un tour de la conversation de la mesure. L'historique ne vit que dans le
+ * navigateur : le serveur le reçoit à chaque tour et l'oublie aussitôt. */
+export interface TourDialogue {
+  role: 'lila' | 'astronaute';
+  texte: string;
+}
+
+export interface ReponseDialogue {
+  /** Ce que le serveur a compris de la réponse, vide si personne n'a parlé. */
+  entendu: string;
+  /** La relance de la cabine, à prononcer. */
+  reponse: string;
+  source: RecommendationSource;
+}
+
 export interface CrewMember {
   id: string;
   displayName: string;

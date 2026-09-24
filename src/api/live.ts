@@ -12,6 +12,7 @@ import type {
   HealthState,
   PowerState,
   Recommendation,
+  ReponseDialogue,
   SensorHealth,
   Session,
   SessionOutcome,
@@ -53,6 +54,19 @@ export const liveTransport: Transport = {
     return request<{ voiceIndex: number }>(`/sessions/${segment(sessionId)}/audio`, {
       method: 'POST',
       body: corps,
+    });
+  },
+
+  sendDialogueTurn(sessionId, wav, historique, dernierTour) {
+    const corps = new FormData();
+    corps.append('fichier', wav, 'reponse.wav');
+    corps.append('historique', JSON.stringify(historique));
+    corps.append('dernier_tour', String(dernierTour));
+    return request<ReponseDialogue>(`/sessions/${segment(sessionId)}/dialogue`, {
+      method: 'POST',
+      body: corps,
+      // Transcription puis rédaction : plus long qu'un appel ordinaire.
+      timeoutMs: 25_000,
     });
   },
 
