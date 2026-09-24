@@ -33,6 +33,8 @@ export function CabinRoute() {
             lastSessionAt={session.lastSessionAt}
             onStart={() => void session.start()}
             busy={!session.member}
+            consentCamera={session.consent.camera}
+            onIdentified={(member) => void session.identify(member)}
           />
         )}
 

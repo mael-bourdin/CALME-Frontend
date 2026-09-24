@@ -5,7 +5,9 @@ import { ArrowRight } from 'lucide-react';
 import { AIPresence } from '@/components/ai/presence';
 import { Button } from '@/components/ui/button';
 import { useSpeech } from '@/lib/use-speech';
+import type { CrewMember } from '@/api';
 import { CabinChrome } from '../components/cabin-chrome';
+import { IdentificationFlow } from '../components/identification-flow';
 
 interface HomeScreenProps {
   firstName: string;
@@ -14,6 +16,11 @@ interface HomeScreenProps {
   busy?: boolean;
   /** Le catalogue s'en sert pour atteindre directement la phrase d'ouverture. */
   autoGreet?: boolean;
+  /** Sans consentement caméra, la reconnaissance faciale ne tente rien. */
+  consentCamera: boolean;
+  /** Prévient la séance de qui vient de s'identifier — reconnu, choisi dans
+   * la liste de repli, ou tout juste enrôlé. */
+  onIdentified: (member: CrewMember) => void;
 }
 
 /** Ce que la cabine dit en s'ouvrant, avant la première question. */
@@ -47,10 +54,18 @@ export function HomeScreen({
   onStart,
   busy,
   autoGreet,
+  consentCamera,
+  onIdentified,
 }: HomeScreenProps) {
   const [greeting, setGreeting] = useState(autoGreet ?? false);
   const [sentence, setSentence] = useState<string | null>(null);
   const speech = useSpeech(sentence, onStart);
+
+  // Tant que personne n'est identifié, l'écran d'accueil habituel — sphère
+  // qui grandit, bonsoir, bouton — n'a rien à montrer : il n'a pas encore de
+  // prénom à dire. `firstName` ne devient non vide qu'une fois `onIdentified`
+  // appelé (reconnu, choisi dans la liste, ou tout juste enrôlé).
+  const identifie = firstName !== '';
 
   // La phrase part une fois la croissance engagée : elle grossit, puis parle.
   useEffect(() => {
@@ -118,7 +133,7 @@ className="mt-[30px] w-[min(45rem,100%)] animate-[fade-in_0.4s_ease-out_both] fo
                 </span>
               ))}
             </p>
-          ) : (
+          ) : identifie ? (
             <motion.div
               key="accueil"
               initial={false}
@@ -144,6 +159,24 @@ className="mt-[30px] w-[min(45rem,100%)] animate-[fade-in_0.4s_ease-out_both] fo
               >
                 {busy ? 'Ouverture…' : 'Commencer'}
               </Button>
+            </motion.div>
+          ) : (
+            // Personne n'est encore identifié : reconnaissance faciale en
+            // silence, puis liste de l'équipage, puis clavier tactile si
+            // besoin d'enrôler. Voir IdentificationFlow.
+            <motion.div
+              key="identification"
+              initial={false}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: EASE }}
+              // Sur la dalle 800×480, la sphère et cette marge grignotent déjà
+              // une centaine de pixels avant même le clavier (quatre rangées
+              // de touches à 44 px chacune, un plancher qui ne peut pas
+              // descendre plus bas) : la marge se resserre pour laisser toute
+              // la place au clavier plutôt que le pousser hors champ.
+              className="mt-[30px] flex w-full flex-col items-center px-6 [@media(max-height:520px)]:mt-2"
+            >
+              <IdentificationFlow consentCamera={consentCamera} onIdentified={onIdentified} />
             </motion.div>
           )}
         </AnimatePresence>

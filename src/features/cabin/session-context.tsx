@@ -50,6 +50,14 @@ interface SessionContextValue {
   /** Renseigné quand le serveur est injoignable ; l'écran le dit. */
   error: string | null;
 
+  /**
+   * Retient qui s'est présenté à l'accueil — reconnu par la caméra, touché
+   * dans la liste de repli, ou tout juste enrôlé — et va chercher sa
+   * dernière séance. L'accueil est la seule source de vérité sur « qui »,
+   * plus une valeur fixe côté serveur : c'est tout le sens de la
+   * reconnaissance faciale.
+   */
+  identify: (member: CrewMember) => Promise<void>;
   start: () => Promise<void>;
   acceptExercise: () => void;
   finishExercise: () => Promise<void>;
@@ -77,27 +85,38 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const streamRef = useRef<SessionStream | null>(null);
 
+  // Qui s'assoit dans la cabine n'est plus supposé d'avance : l'accueil le
+  // découvre lui-même (reconnaissance faciale, puis liste, puis enrôlement —
+  // voir HomeScreen). Seul le consentement est encore préchargé ici, parce
+  // que l'accueil en a besoin avant même de décider s'il tente la caméra.
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
-        const current = await api.getCurrentMember();
-        if (cancelled) return;
-        setMember(current);
-        const [last, storedConsent] = await Promise.all([
-          api.getLastSessionAt(current.id),
-          api.getConsent(),
-        ]);
-        if (cancelled) return;
-        setLastSessionAt(last);
-        setConsent(storedConsent);
+        const storedConsent = await api.getConsent();
+        if (!cancelled) setConsent(storedConsent);
       } catch (cause) {
+        // Le consentement par défaut (caméra et micro ouverts) reste actif :
+        // une panne ici ne prive de rien de plus que la reconnaissance
+        // faciale, qui a son propre repli.
         if (!cancelled) setError(cause instanceof Error ? cause.message : 'Erreur inconnue');
       }
     })();
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  const identify = useCallback(async (identified: CrewMember) => {
+    setMember(identified);
+    try {
+      const last = await api.getLastSessionAt(identified.id);
+      setLastSessionAt(last);
+    } catch {
+      // La dernière séance n'est qu'un confort d'affichage ; son absence ne
+      // doit pas empêcher de commencer une mesure.
+      setLastSessionAt(null);
+    }
   }, []);
 
   useEffect(() => () => streamRef.current?.close(), []);
@@ -197,6 +216,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setOutcome(null);
     setConnection('closed');
     setError(null);
+    // La cabine oublie qui vient de sortir : la personne suivante doit être
+    // identifiée à son tour, pas hériter du prénom de la précédente.
+    setMember(null);
+    setLastSessionAt(null);
   }, []);
 
   const toggleConsent = useCallback(
@@ -228,6 +251,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       consent,
       connection,
       error,
+      identify,
       start,
       acceptExercise,
       finishExercise,
@@ -249,6 +273,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       consent,
       connection,
       error,
+      identify,
       start,
       acceptExercise,
       finishExercise,

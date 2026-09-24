@@ -67,6 +67,24 @@ export const liveTransport: Transport = {
     return result.lastSessionAt;
   },
 
+  getCrewList() {
+    return request<CrewMember[]>('/crew');
+  },
+
+  identifyCrewMember(empreinte) {
+    return request<CrewMember | null>(`/cabins/${segment(CABIN_ID)}/identify`, {
+      method: 'POST',
+      body: { empreinte },
+    });
+  },
+
+  enrollCrewMember(displayName, empreinte) {
+    return request<CrewMember>('/crew/enroll', {
+      method: 'POST',
+      body: { displayName, empreinte },
+    });
+  },
+
   openSession(crewId) {
     return request<Session>('/sessions', {
       method: 'POST',

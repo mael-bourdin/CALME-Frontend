@@ -71,6 +71,19 @@ export interface Transport {
   sendVoiceSample(sessionId: string, wav: Blob): Promise<{ voiceIndex: number }>;
   getCurrentMember(): Promise<CrewMember>;
   getLastSessionAt(crewId: string): Promise<string | null>;
+  /**
+   * L'équipage déjà enrôlé, pour la liste de repli de l'accueil quand la
+   * reconnaissance faciale ne reconnaît personne — ou n'a pas pu essayer.
+   */
+  getCrewList(): Promise<CrewMember[]>;
+  /**
+   * Compare l'empreinte calculée dans le navigateur à celles déjà enrôlées.
+   * `null` si personne ne correspond d'assez près : ce n'est pas une erreur,
+   * c'est le résultat normal d'une personne pas encore enrôlée.
+   */
+  identifyCrewMember(empreinte: number[]): Promise<CrewMember | null>;
+  /** Enrôle un nouveau membre d'équipage avec sa première empreinte faciale. */
+  enrollCrewMember(displayName: string, empreinte: number[]): Promise<CrewMember>;
   openSession(crewId: string): Promise<Session>;
   getSession(sessionId: string): Promise<Session>;
   closeSession(sessionId: string): Promise<SessionOutcome>;

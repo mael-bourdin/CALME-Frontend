@@ -4,6 +4,7 @@ import type {
   CabinMode,
   ConnectionState,
   CrewHistory,
+  CrewMember,
   Indicators,
   Level,
   PowerState,
@@ -63,6 +64,14 @@ interface MockState {
   recommendation: Recommendation | null;
   alerts: typeof ALERTS;
   feedback: Record<string, Feedback>;
+  /** Copie mutable de CREW : un enrôlement en mock y ajoute une ligne, sans
+   * toucher à la constante importée (les huit membres de la démonstration
+   * restent ceux de data.ts d'une exécution à l'autre). */
+  crew: CrewMember[];
+  /** Empreinte par identifiant, pour que `identifyCrewMember` ait quelque
+   * chose à comparer. Vide au démarrage : comme en vrai, personne n'est
+   * reconnu tant que personne ne s'est enrôlé dans cette session. */
+  empreintes: Map<string, number[]>;
 }
 
 const state: MockState = {
@@ -76,7 +85,28 @@ const state: MockState = {
   recommendation: null,
   alerts: ALERTS.map((a) => ({ ...a })),
   feedback: {},
+  crew: CREW.map((m) => ({ ...m })),
+  empreintes: new Map(),
 };
+
+/** Même seuil euclidien que le serveur (voir app/services/visage.py). */
+const SEUIL_IDENTIFICATION = 0.6;
+
+function distanceEuclidienne(a: number[], b: number[]): number {
+  let somme = 0;
+  for (let i = 0; i < a.length; i += 1) somme += (a[i] - b[i]) ** 2;
+  return Math.sqrt(somme);
+}
+
+/** Deux initiales au plus, comme `Avatar` les affiche côté écrans. */
+function initialesDe(nom: string): string {
+  return nom
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 function wattsFor(mode: CabinMode): number {
   return POWER_TOTALS[mode] ?? 11;
@@ -300,6 +330,41 @@ export const mockTransport: Transport = {
 
   getLastSessionAt() {
     return delay('deux jours');
+  },
+
+  getCrewList() {
+    return delay(state.crew.map((m) => ({ ...m })));
+  },
+
+  identifyCrewMember(empreinte) {
+    // Le mock ne voit jamais de vraie image : sans empreinte enrôlée dans
+    // cette même exécution, personne ne peut correspondre — exactement ce
+    // qui se passe en vrai la première fois qu'une cabine rencontre
+    // quelqu'un. Une fois enrôlé (voir enrollCrewMember), se réidentifier
+    // avec la même empreinte fonctionne, pour pouvoir démontrer les deux cas.
+    let meilleur: { id: string; distance: number } | null = null;
+    for (const [id, reference] of state.empreintes) {
+      const distance = distanceEuclidienne(reference, empreinte);
+      if (!meilleur || distance < meilleur.distance) meilleur = { id, distance };
+    }
+    const trouve =
+      meilleur && meilleur.distance < SEUIL_IDENTIFICATION
+        ? (state.crew.find((m) => m.id === meilleur!.id) ?? null)
+        : null;
+    return delay(trouve);
+  },
+
+  enrollCrewMember(displayName, empreinte) {
+    const membre: CrewMember = {
+      id: `crew-${Date.now()}`,
+      displayName,
+      role: 'Nouvel équipage',
+      initials: initialesDe(displayName),
+      joinedSol: CURRENT_SOL,
+    };
+    state.crew.push(membre);
+    state.empreintes.set(membre.id, empreinte);
+    return delay(membre);
   },
 
   openSession(crewId) {
