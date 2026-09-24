@@ -27,13 +27,39 @@ const DOSSIER_MODELES = '/models-face';
 const DELAI_MAX_MS = 6000;
 const INTERVALLE_ESSAI_MS = 200;
 
-/** 416 plutôt que 320 par défaut (multiple de 32 exigé) : un visage à un
- * mètre dans une image 640×480 reste détecté. Seuil abaissé pour la lumière
- * tamisée de la cabine ; le descripteur, lui, reste aussi exigeant. */
+/** 512 (multiple de 32 exigé) sur une image 1280×720 : avec une caméra grand
+ * angle posée loin (la DJI Osmo de la démonstration), le visage n'occupe
+ * qu'une centaine de pixels et échappait au réglage par défaut. Seuil abaissé
+ * pour le contre-jour ; le descripteur, lui, reste aussi exigeant. */
 const OPTIONS_DETECTEUR = new faceapi.TinyFaceDetectorOptions({
-  inputSize: 416,
-  scoreThreshold: 0.4,
+  inputSize: 512,
+  scoreThreshold: 0.35,
 });
+
+export interface BoiteVisage {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+let chargementDetecteur: Promise<void> | null = null;
+
+/**
+ * Où est le visage dans l'image, ou `null`. Sert à l'indice facial pour
+ * recadrer avant l'analyse : MediaPipe est conçu pour des visages proches et
+ * ne trouve rien quand le visage est petit dans le champ.
+ */
+export async function localiserVisage(
+  source: HTMLVideoElement | HTMLCanvasElement,
+): Promise<BoiteVisage | null> {
+  chargementDetecteur ??= faceapi.nets.tinyFaceDetector.loadFromUri(DOSSIER_MODELES);
+  await chargementDetecteur;
+  const detection = await faceapi.detectSingleFace(source, OPTIONS_DETECTEUR);
+  if (!detection) return null;
+  const { x, y, width, height } = detection.box;
+  return { x, y, width, height };
+}
 
 export type ResultatEmpreinte = { ok: true; empreinte: number[] } | { ok: false; raison: string };
 
@@ -86,7 +112,7 @@ export async function capturerEmpreinteDetaillee(echantillons = 3): Promise<Resu
 
     try {
       flux = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
       });
     } catch (e) {
       return { ok: false, raison: messageErreurCamera(e) };

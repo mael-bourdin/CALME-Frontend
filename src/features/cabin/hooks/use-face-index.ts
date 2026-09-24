@@ -2,6 +2,8 @@ import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { useEffect, useRef, useState } from 'react';
 
 import { api } from '../../../api';
+import { localiserVisage } from '../lib/empreinte-visage';
+import type { BoiteVisage } from '../lib/empreinte-visage';
 import { messageErreurCamera } from '../lib/erreur-camera';
 
 /**
@@ -14,6 +16,22 @@ import { messageErreurCamera } from '../lib/erreur-camera';
  */
 
 const FPS = 10;
+/** Le visage est relocalisé deux fois par seconde : il bouge peu, et la
+ * détection coûte plus cher que l'analyse du recadrage. */
+const TOUS_LES_N_IMAGES = 5;
+/** Côté du recadrage envoyé à MediaPipe, et marge autour du visage. */
+const COTE_RECADRAGE = 320;
+const MARGE_RECADRAGE = 2.2;
+
+/** Un carré centré sur le visage, élargi, borné à l'image. */
+function carreAutour(boite: BoiteVisage, largeur: number, hauteur: number) {
+  const cote = Math.min(Math.max(boite.width, boite.height) * MARGE_RECADRAGE, largeur, hauteur);
+  const cx = boite.x + boite.width / 2;
+  const cy = boite.y + boite.height / 2;
+  const sx = Math.min(Math.max(0, cx - cote / 2), largeur - cote);
+  const sy = Math.min(Math.max(0, cy - cote / 2), hauteur - cote);
+  return { sx, sy, cote };
+}
 const FENETRE_S = 30;
 const SEUIL_CLIGNEMENT = 0.5;
 
@@ -53,7 +71,9 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
     async function demarrer() {
       try {
         const fluxLocal = await navigator.mediaDevices.getUserMedia({
-          video: { width: 320, height: 240, frameRate: FPS },
+          // Haute définition : le visage est ensuite recadré (voir plus bas),
+          // il faut assez de pixels pour qu'un visage lointain reste net.
+          video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: FPS },
         });
         if (!vivant) {
           // Le nettoyage est déjà passé pendant l'attente de la caméra : à ce
@@ -80,6 +100,7 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
         const landmarkerLocal = await FaceLandmarker.createFromOptions(fileset, {
           baseOptions: { modelAssetPath: '/models/face_landmarker.task' },
           outputFaceBlendshapes: true,
+          minFaceDetectionConfidence: 0.3,
           outputFacialTransformationMatrixes: true,
           runningMode: 'VIDEO',
           numFaces: 1,
@@ -94,9 +115,34 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
         landmarker = landmarkerLocal;
         setPret(true);
 
+        // MediaPipe ne voit pas un visage petit dans le champ (caméra grand
+        // angle posée loin) : on repère le visage dans l'image entière, puis
+        // on lui donne un recadrage où il remplit le cadre.
+        const recadrage = document.createElement('canvas');
+        recadrage.width = COTE_RECADRAGE;
+        recadrage.height = COTE_RECADRAGE;
+        const pinceau = recadrage.getContext('2d');
+        let boite: BoiteVisage | null = null;
+        let compteur = 0;
+        let localisationEnCours = false;
+
         timerAnalyse = window.setInterval(() => {
-          if (!landmarker) return;
-          const resultat = landmarker.detectForVideo(video, performance.now());
+          if (!landmarker || !pinceau || !video.videoWidth) return;
+          if (compteur++ % TOUS_LES_N_IMAGES === 0 && !localisationEnCours) {
+            localisationEnCours = true;
+            void localiserVisage(video)
+              .then((trouvee) => {
+                if (trouvee) boite = trouvee;
+              })
+              .catch(() => undefined)
+              .finally(() => {
+                localisationEnCours = false;
+              });
+          }
+          if (!boite) return;
+          const { sx, sy, cote } = carreAutour(boite, video.videoWidth, video.videoHeight);
+          pinceau.drawImage(video, sx, sy, cote, cote, 0, 0, COTE_RECADRAGE, COTE_RECADRAGE);
+          const resultat = landmarker.detectForVideo(recadrage, performance.now());
           const formes = resultat.faceBlendshapes?.[0]?.categories ?? [];
           if (formes.length === 0) return;
 
