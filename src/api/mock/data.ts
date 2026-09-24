@@ -1,12 +1,4 @@
-import type {
-  AggregateTrends,
-  Alert,
-  CrewMember,
-  CrewSummary,
-  Exercise,
-  Level,
-  PowerBudgetLine,
-} from '../types';
+import type { AggregateTrends, Alert, CrewMember, CrewSummary, Exercise, Level } from '../types';
 
 /** Sol courant, pour que les dates affichées restent cohérentes entre écrans. */
 export const CURRENT_SOL = 4212;
@@ -312,19 +304,6 @@ export const ALERTS: Alert[] = [
   },
 ];
 
-/** Le budget du dossier, poste par poste. */
-export const POWER_LINES: PowerBudgetLine[] = [
-  {
-    label: 'Capteurs et ESP32',
-    byMode: { standby: 1.2, measuring: 2.4, session: 2.4, degraded: 2.0 },
-  },
-  { label: 'Caméra', byMode: { standby: 0, measuring: 1.8, session: 1.8, degraded: 0 } },
-  { label: 'Serveur', byMode: { standby: 8, measuring: 22, session: 28, degraded: 14 } },
-  { label: 'Écran', byMode: { standby: 0, measuring: 12, session: 12, degraded: 0 } },
-  { label: 'Éclairage', byMode: { standby: 2, measuring: 4, session: 18, degraded: 4 } },
-  { label: 'Son', byMode: { standby: 0, measuring: 0, session: 10, degraded: 6 } },
-];
-
 export const POWER_TOTALS: Record<string, number> = {
   standby: 11,
   measuring: 42,
@@ -344,8 +323,6 @@ export function buildTrends(): AggregateTrends {
   return {
     meanIndex,
     sessionsPerDay: 6.7,
-    breathingRateBefore: 13.4,
-    breathingRateAfter: 7.1,
     amberShare: 0.31,
   };
 }

@@ -202,13 +202,6 @@ export interface CrewHistory {
     exerciseName: string;
     feedback: 'helped' | 'not-really' | null;
   }[];
-  /** L'accès au détail doit être justifié, et l'ouverture est journalisée. */
-  accessGrant: {
-    reason: 'alert-acknowledged' | 'explicit-consent';
-    alertId: string | null;
-    acknowledgedBy: string | null;
-    grantedAt: string;
-  };
 }
 
 export interface Alert {
@@ -221,24 +214,6 @@ export interface Alert {
   acknowledgedAt: string | null;
   acknowledgedBy: string | null;
   note: string | null;
-}
-
-export interface PowerBudgetLine {
-  label: string;
-  /** Watts par mode, dans l'ordre veille, mesure, séance, dégradé. */
-  byMode: Record<CabinMode, number>;
-}
-
-export interface PowerState {
-  mode: CabinMode;
-  /** Mesuré par l'INA219, pas estimé. C'est ce qui rend le discours vérifiable. */
-  watts: number;
-  /** Consigne du réseau du vaisseau, en pourcentage du budget nominal. */
-  setpointPercent: number;
-  budgetWatts: number;
-  lines: PowerBudgetLine[];
-  dailyCostWh: number;
-  dailySavingWh: number;
 }
 
 /**
@@ -263,19 +238,10 @@ export interface SensorHealth {
   note: string | null;
 }
 
-export interface HealthState {
-  database: { ok: boolean; detail: string };
-  model: { ok: boolean; detail: string; name: string | null };
-  sensors: { ok: boolean; online: number; total: number };
-  buffer: { pending: number; lastReplayAt: string | null };
-}
-
 export interface AggregateTrends {
   /** Trente points, agrégés sur l'équipage, sans nom. */
   meanIndex: { sol: number; value: number }[];
   sessionsPerDay: number;
-  breathingRateAfter: number;
-  breathingRateBefore: number;
   amberShare: number;
 }
 

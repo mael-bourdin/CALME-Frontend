@@ -7,7 +7,6 @@ import type {
   CrewMember,
   Indicators,
   Level,
-  PowerState,
   Recommendation,
   SensorHealth,
   SensorFrame,
@@ -24,7 +23,6 @@ import {
   FALLBACK_MESSAGES,
   MODEL_MESSAGES,
   OCCUPANT_ID,
-  POWER_LINES,
   POWER_TOTALS,
   buildCrewOverview,
   buildHistory,
@@ -110,20 +108,6 @@ function initialesDe(nom: string): string {
 
 function wattsFor(mode: CabinMode): number {
   return POWER_TOTALS[mode] ?? 11;
-}
-
-function powerState(): PowerState {
-  return {
-    mode: state.mode,
-    watts: wattsFor(state.mode),
-    setpointPercent: state.setpointPercent,
-    budgetWatts: 80,
-    lines: POWER_LINES,
-    // 8 séances de 15 min à 72 W, plus 22 h de veille à 11 W.
-    dailyCostWh: 386,
-    // 8 personnes × 100 W × 3 % de baisse supposée, sur 24 h.
-    dailySavingWh: 576,
-  };
 }
 
 /** Les signaux réellement pris en compte, une fois le consentement appliqué. */
@@ -483,7 +467,6 @@ export const mockTransport: Transport = {
     const member = CREW.find((m) => m.id === crewId) ?? CREW[0];
     const overview = buildCrewOverview().find((c) => c.member.id === crewId);
     const to = overview?.meanIndex ?? 40;
-    const alert = state.alerts.find((a) => a.crewId === crewId && a.acknowledgedAt);
 
     const history: CrewHistory = {
       member,
@@ -522,14 +505,6 @@ export const mockTransport: Transport = {
           feedback: 'not-really',
         },
       ],
-      // Le détail ne s'ouvre qu'après acquittement d'une alerte, ou avec
-      // l'accord explicite de la personne. L'ouverture est journalisée.
-      accessGrant: {
-        reason: alert ? 'alert-acknowledged' : 'explicit-consent',
-        alertId: alert?.id ?? null,
-        acknowledgedBy: alert?.acknowledgedBy ?? null,
-        grantedAt: `Sol ${CURRENT_SOL}, 18:26`,
-      },
     };
     return delay(history);
   },
@@ -549,29 +524,6 @@ export const mockTransport: Transport = {
 
   getTrends() {
     return delay(buildTrends());
-  },
-
-  getPower() {
-    return delay(powerState());
-  },
-
-  setPowerSetpoint(percent) {
-    state.setpointPercent = percent;
-    // Sous 60 % du budget, la cabine bascule d'elle-même : la caméra d'abord,
-    // puis l'écran, puis le modèle de vision. Les capteurs biologiques restent.
-    state.mode = percent < 60 ? 'degraded' : state.session ? 'measuring' : 'standby';
-    return delay(powerState(), 400);
-  },
-
-  getHealth() {
-    return delay({
-      database: { ok: true, detail: '12,4 Go, 30 jours de brut' },
-      model: state.modelDown
-        ? { ok: false, detail: 'coupé pour économiser l’énergie', name: null }
-        : { ok: true, detail: '3 Md, 1,8 s par consigne', name: 'llama-3b-instruct' },
-      sensors: { ok: state.suspect.size === 0, online: 4 - state.suspect.size, total: 4 },
-      buffer: { pending: 0, lastReplayAt: `Sol ${CURRENT_SOL - 5}` },
-    });
   },
 
   getSensors() {

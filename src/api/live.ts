@@ -9,8 +9,6 @@ import type {
   CrewHistory,
   CrewMember,
   CrewSummary,
-  HealthState,
-  PowerState,
   Recommendation,
   ReponseDialogue,
   SensorHealth,
@@ -182,21 +180,6 @@ export const liveTransport: Transport = {
 
   getTrends() {
     return request<AggregateTrends>('/trends');
-  },
-
-  getPower() {
-    return request<PowerState>('/power');
-  },
-
-  setPowerSetpoint(percent) {
-    return request<PowerState>('/power/setpoint', {
-      method: 'POST',
-      body: { percent },
-    });
-  },
-
-  getHealth() {
-    return request<HealthState>('/health');
   },
 
   getSensors() {

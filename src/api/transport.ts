@@ -6,8 +6,6 @@ import type {
   CrewHistory,
   CrewMember,
   CrewSummary,
-  HealthState,
-  PowerState,
   Recommendation,
   ReponseDialogue,
   SensorHealth,
@@ -130,10 +128,6 @@ export interface Transport {
   getTrends(): Promise<AggregateTrends>;
 
   /* ---- Énergie et santé système ------------------------------------------ */
-  getPower(): Promise<PowerState>;
-  /** La consigne de réduction vient du réseau du vaisseau. */
-  setPowerSetpoint(percent: number): Promise<PowerState>;
-  getHealth(): Promise<HealthState>;
 
   /** Les quatre capteurs de la cabine, avec leur dernière fenêtre de mesure. */
   getSensors(): Promise<SensorHealth[]>;

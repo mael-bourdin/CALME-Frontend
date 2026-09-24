@@ -21,9 +21,10 @@ export function DashboardLayout() {
   const items: DockItem[] = [
     { to: '/medecin', label: 'Équipage', icon: 'crew' },
     { to: '/medecin/alertes', label: 'Alertes', icon: 'alerts', badge: pending },
-    { to: '/medecin/capteurs', label: 'Capteurs', icon: 'trends' },
-    { to: '/medecin/energie', label: 'Énergie', icon: 'power' },
-    { to: '/medecin/membre', label: 'Membre', icon: 'member' },
+    // Le dossier d'un membre s'ouvre depuis la liste de l'équipage ; la page
+    // Énergie reposait sur le capteur de courant (abandonné) : retirée.
+    { to: '/medecin/tendances', label: 'Tendances', icon: 'trends' },
+    { to: '/medecin/capteurs', label: 'Capteurs', icon: 'cabin' },
   ];
 
   return (

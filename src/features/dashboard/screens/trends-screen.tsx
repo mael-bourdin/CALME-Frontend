@@ -37,7 +37,7 @@ export function TrendsScreen() {
         <>
           <GlassPanel density="thick" className="space-y-4 p-6 sm:p-8">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-medium">Indice moyen d’équipage</h2>
+              <h2 className="font-medium">Bien-être moyen de l’équipage</h2>
               <p className="text-sm text-ink-faint">
                 Note de bien-être sur 100 (100 = le mieux). Les pointillés sont les seuils 35 et 60.
               </p>
@@ -53,7 +53,7 @@ export function TrendsScreen() {
                 { value: 60, color: 'var(--c-watch)' },
                 { value: 35, color: 'var(--c-alert)' },
               ]}
-              aria-label="Indice moyen d’équipage sur trente jours"
+              aria-label="Note de bien-être moyenne de l’équipage sur trente jours"
             />
 
             <div className="flex justify-between font-mono text-xs text-ink-faint">
@@ -72,19 +72,6 @@ export function TrendsScreen() {
               tone="text-calm"
             />
             <Figure
-              value={
-                trends.data.breathingRateAfter
-                  ? trends.data.breathingRateAfter.toLocaleString('fr-FR')
-                  : '—'
-              }
-              caption={
-                trends.data.breathingRateAfter
-                  ? `cycles par minute après séance, contre ${trends.data.breathingRateBefore.toLocaleString('fr-FR')} avant`
-                  : 'pas encore mesurée (capteur cardiaque absent)'
-              }
-              tone="text-calm"
-            />
-            <Figure
               value={`${Math.round(trends.data.amberShare * 100)} %`}
               caption="des séances en orange ou en rouge, sur trente jours"
               tone="text-watch"
@@ -99,8 +86,8 @@ export function TrendsScreen() {
             />
             <p className="text-sm text-ink-soft">
               Ces courbes sont agrégées et anonymes. Un module de planification des quarts peut les
-              consommer, à condition qu’un humain prenne la décision. L’indice de charge n’est
-              jamais présenté au commandant sous forme nominative.
+              consommer, à condition qu’un humain prenne la décision. La note de bien-être n’est
+              jamais présentée au commandant sous forme nominative.
             </p>
           </GlassPanel>
         </>

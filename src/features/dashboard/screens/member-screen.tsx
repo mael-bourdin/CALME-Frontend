@@ -1,5 +1,4 @@
 import { useParams } from 'react-router-dom';
-import { Lock } from 'lucide-react';
 import { api } from '@/api';
 import type { Level } from '@/api';
 import { GlassPanel } from '@/components/ui/glass-panel';
@@ -45,27 +44,12 @@ export function MemberScreen() {
     return <p className="py-16 text-center text-alert">{history.error ?? 'Dossier introuvable'}</p>;
   }
 
-  const { member, points, sessions, accessGrant } = history.data;
+  const { member, points, sessions } = history.data;
   const current = points.at(-1)?.index ?? 0;
   const tone = levelClasses(levelFor(current));
 
   return (
     <div className="space-y-5">
-      <GlassPanel
-        density="thick"
-        className="flex flex-wrap items-center gap-x-4 gap-y-2 border border-alert/45 px-5 py-4 sm:px-6"
-      >
-        <Lock className="size-4 shrink-0 text-alert" strokeWidth={1.7} aria-hidden />
-        <p className="min-w-0 flex-1 text-sm">
-          {accessGrant.reason === 'alert-acknowledged'
-            ? `Accès ouvert par l’alerte du ${dateLisible(accessGrant.grantedAt)}, acquittée par ${accessGrant.acknowledgedBy}.`
-            : `Accès ouvert ${dateLisible(accessGrant.grantedAt)} avec l’accord explicite de la personne.`}
-        </p>
-        {/* La règle est écrite à côté de l'exception, pas dans une politique
-            que personne n'ouvre : c'est ici qu'on est en train d'en profiter. */}
-        <p className="text-sm text-ink-faint">Hors alerte, il faut l’accord de la personne.</p>
-      </GlassPanel>
-
       <GlassPanel density="thick" className="flex flex-wrap items-center gap-5 p-6 sm:p-7">
         <span
           className={cn(
@@ -113,7 +97,7 @@ export function MemberScreen() {
             { value: 60, color: 'var(--c-watch)' },
             { value: 35, color: 'var(--c-alert)' },
           ]}
-          aria-label={`Indice de ${member.displayName} sur trente jours`}
+          aria-label={`Bien-être de ${member.displayName} sur trente jours`}
         />
       </GlassPanel>
 

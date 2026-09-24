@@ -6,7 +6,6 @@ import { CrewScreen } from '@/features/dashboard/screens/crew-screen';
 import { AlertsScreen } from '@/features/dashboard/screens/alerts-screen';
 import { TrendsScreen } from '@/features/dashboard/screens/trends-screen';
 import { SensorsScreen } from '@/features/dashboard/screens/sensors-screen';
-import { PowerScreen } from '@/features/dashboard/screens/power-screen';
 import { MemberScreen } from '@/features/dashboard/screens/member-screen';
 
 /**
@@ -32,10 +31,7 @@ export const router = createBrowserRouter([
       { index: true, element: <CrewScreen /> },
       { path: 'alertes', element: <AlertsScreen /> },
       { path: 'capteurs', element: <SensorsScreen /> },
-      // Les agrégats sur trente jours ne figurent pas dans les maquettes : la
-      // route existe encore, le dock n'y mène pas.
       { path: 'tendances', element: <TrendsScreen /> },
-      { path: 'energie', element: <PowerScreen /> },
       { path: 'membre', element: <MemberScreen /> },
       { path: 'membre/:crewId', element: <MemberScreen /> },
     ],
