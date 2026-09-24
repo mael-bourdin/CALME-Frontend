@@ -16,6 +16,8 @@ import { messageErreurCamera } from '../lib/erreur-camera';
  */
 
 const FPS = 10;
+/** L'expression du visage est lissée sur cinq secondes seulement. */
+const FENETRE_TENSION_S = 5;
 /** Le visage est relocalisé deux fois par seconde : il bouge peu, et la
  * détection coûte plus cher que l'analyse du recadrage. */
 const TOUS_LES_N_IMAGES = 5;
@@ -148,14 +150,22 @@ export function useFaceIndex(sessionId: string | null, actif: boolean) {
           const formes = resultat.faceBlendshapes?.[0]?.categories ?? [];
           if (formes.length === 0) return;
 
-          const sourcils =
-            (valeur(formes, 'browDownLeft') +
-              valeur(formes, 'browDownRight') +
-              valeur(formes, 'browInnerUp')) /
-            3;
-          const bouche = (valeur(formes, 'mouthPressLeft') + valeur(formes, 'mouthPressRight')) / 2;
-          tensions.current.push(sourcils * 0.7 + bouche * 0.3);
-          if (tensions.current.length > FPS * FENETRE_S) tensions.current.shift();
+          // L'expression la plus marquée l'emporte : froncement, tristesse
+          // (sourcils relevés au centre, coins de la bouche tombants), lèvres
+          // pincées, nez froncé. L'ancienne moyenne sourcils + bouche pincée
+          // ne voyait pas une moue triste ou contrariée.
+          const moyenne = (a: string, b: string) => (valeur(formes, a) + valeur(formes, b)) / 2;
+          const froncement = moyenne('browDownLeft', 'browDownRight');
+          const tristesse = Math.max(
+            valeur(formes, 'browInnerUp'),
+            moyenne('mouthFrownLeft', 'mouthFrownRight') * 1.2,
+          );
+          const pincement = moyenne('mouthPressLeft', 'mouthPressRight');
+          const degout = moyenne('noseSneerLeft', 'noseSneerRight');
+          tensions.current.push(Math.max(froncement, tristesse, pincement, degout));
+          // Fenêtre courte : une expression de quelques secondes ne doit pas
+          // être noyée dans trente secondes de visage neutre.
+          if (tensions.current.length > FPS * FENETRE_TENSION_S) tensions.current.shift();
           sourires.current.push(
             (valeur(formes, 'mouthSmileLeft') + valeur(formes, 'mouthSmileRight')) / 2,
           );
